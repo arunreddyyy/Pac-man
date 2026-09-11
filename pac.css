@@ -1,0 +1,150 @@
+:root{
+    --void:#050303;
+    --blood:#7a0a0a;
+    --bloodbright:#c81414;
+    --sick:#8fae3a;
+    --bone:#3a2a1a;
+    --rot:#3a2a1a;
+    --wall:#2b0d10;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+html,
+body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:var(--void);
+    overflow:hidden;
+    font-family:'Courier New',monospace;
+}
+
+body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    min-height:100vh;
+
+    background:
+     radial-gradient(
+        ellipse at 50% 20%,
+        #150505 0%,
+        #050303,
+        #000 100%
+     );
+
+     position:relative;
+}
+
+#grain{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:50;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            transparent 40%,
+            rgba(0,0,0,0.85) 100%
+        );
+         
+        mix-blend-mode:multiply;
+}
+
+#flicker{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:49;
+    background:#000;
+    opacity:0;
+}
+
+h1{
+    color:var(--bloodbright);
+    font-size:2.2em;
+    letter-spacing:6px;
+    text-transform:uppercase;
+    margin:6px 0 2px 0;
+
+    text-shadow:
+    0 0 8px var(--blood),
+    0 0 22px var(--blood),
+    2px 2px 0 #000;
+
+    font-family:'Courier New',monospace;
+
+    animation:titlepulse 3.4s infinite ease-in-out;
+}
+
+@keyframes titlepulse{
+
+    0%,
+    100%{
+        text-shadow:
+        0 0 8px var(--blood),
+        0 0 22px var(--blood),
+        2px 2px 0 #000;
+    }
+
+    50%{
+        text-shadow:
+        0 0 16px var(--bloodbright),
+        0 0 40px var(--bloodbright),
+        2px 2px 0 #000;
+    }
+}
+
+.subtitle{
+    color:#5a4040;
+    font-size:.75em;
+    letter-spacing:4px;
+    margin-bottom:10px;
+    text-transform:uppercase;
+}
+
+#wrap{
+    position:block;
+
+    border:3px solid var(--rot);
+
+    box-shadow:
+    0 0 40px rgba(120,0,0,.5),
+    inset 0 0 60px rgba(0,0,0,.9);
+
+    background:#000;
+}
+
+canvas{
+    display:block;
+    background:#000;
+}
+
+#hud{
+    width:100%;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    color:var(--bone);
+    font-size:.9em;
+    letter-spacing: 2px;
+
+    padding:6px 4px;
+
+    text-transform:uppercase;
+
+    gap:12px;
+    flex-wrap:wrap;
+
+    background:rgba(0,0,0,.45);
+
+    border-bottom:
+        1px solid rgba(255,255,255,.05);
+}

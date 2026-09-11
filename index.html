@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Maze of The Hollow</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+
+        <div id = "grain"></div>
+        <div id="flicker"></div>
+        
+        <h1>Maze of the Hollow</h1>
+        <div class="subtitle">it is always watching, always hungry</div>
+
+        <div id="wrap">
+
+            <div id="hud">
+                <div>
+                    <span class="lbl">SANITY</span>
+                    <span id="score">0</span>
+                </div>
+
+                <div>
+                    <span class="lbl">LEVEL</span>
+                    <span id="level">1</span>
+                </div>
+
+                <div>
+                    <span class="lbl">WEAKNESS</span>
+                    <span id="weaknessCount">8</span>
+                </div>
+
+                <div>
+                    <span class="lbl">SOULS LEFT</span>
+                    <span id="lives">●●●</span>
+                    <small id="lifeCount">3 / 3</small>
+                </div>
+            </div>
+
+            <button id="pauseBtn" type="button">Pause [P]</button>
+
+            <canvas id="game" width="608" height="672"></canvas>
+
+            <div id="levelBanner">
+                <strong>LEVEL 2</strong>
+                <span>THE HOLLOW DEEPENS</span>
+            </div>
+
+            <div id="pauseeOverlay">
+                <h2>PAUSED</h2>
+                <p>The Hollow is waiting.</p>
+                <button id="resumeBtn" type="button">Resume</button>
+            </div>
+
+            <div id="msgOverlay">
+
+                <h2 id="msgTitle">MAZE OF THE HOLLOW</h2>
+
+                <p id="msgBody">
+                    Something old lives in these walls. collect the pale bones scattered
+                    through the dark and find stair before the shapes find you.
+                    They do not blink. They do not stop.
+                    <br><br>
+                    Arrow Keys or WASD to move. Eat the glowing orbs to turn the hunter
+                    into prey - for a few precious seconds.
+                </p>
+
+                <div class="selectRow">
+                    <div class="selectLabel">Choose your nightmare</div>
+                    <div class="pillRow" id="diffButtons"></div>
+                </div>
+
+                <button id="startBtn">Descend</button>
+
+                <div class="hint">
+                    sound recommended. Turn the lights down.
+                </div>
+
+            </div>
+        </div>
+
+        <div id="jumpscare">
+            <video
+            id="caughtVideo"
+            playsinline
+            preloadd="auto"
+            controlslist="nodownload"
+            disablepictureinpicture>
+        
+        </video>
+        </div>
+
+        <script src="pac.css"></script>
+    </body>
+</html>
