@@ -148,3 +148,200 @@ canvas{
     border-bottom:
         1px solid rgba(255,255,255,.05);
 }
+
+#hud span.lbl{
+   color:#6a5a50; 
+}
+
+#lives{
+    color:var(--bloodbright);
+}
+
+#hud > div{
+    flex:1;
+    min-width:120px;
+}
+
+#hud > div:nth-child(2){
+    text-align:center;
+}
+
+#hud > div:last-child{
+    text-align:right;
+}
+
+#lifeCount{
+    font-size:.65em;
+    color:#7f6d65;
+    margin-left:4px;
+}
+
+#weaknessCount{
+    color:var(--bloodbright);
+
+    text-shadow:
+     0 0 8px var(--bloodbright);
+}
+
+#progress{
+    height:4px;
+    background:#120808;
+    border-top:1px solid #261414;
+    overflow:hidden;
+}
+
+#progressBar{
+    display:block;
+    height:100%;
+    width:0%;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--bloodbright),
+            #ff8b3d
+        );
+
+        box-shadow:
+            0 0 10px var(--bloodbright);
+
+            transition:width .18s ease;
+}
+
+#msgOverlay{
+    position:absolute;
+    inset:0;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+
+    background:rgba(2,0,0,.88);
+
+    color:var(--bloodbright);
+
+    text-align:center;
+
+    z-index:20;
+
+    letter-spacing:3px;
+
+    padding:20px;
+
+    backdrop-filter:blur(3px);
+}
+
+#msgOverlay h2{
+    font-size:1.8em;
+    margin-bottom:14px;
+
+    text-shadow:
+    0 0 14px var(--blood);
+
+    animation:shake .15s infinite;
+}
+
+@keyframes shake{
+
+    0%{
+        transform:translate(0,0);
+    }
+
+    25%{
+        transform:translate(1px, -1px);
+    }
+
+    50%{
+        transform:translate(-1px, 1px);
+    }
+
+    75%{
+        transform:translate(1px, 1px);
+    }
+
+    100%{
+        transform:translate(0,0);
+    }
+}
+
+#msgOverlay p{
+    color:#a89080;
+    font-size:.85em;
+    max-width:420px;
+    line-height:1.6;
+}
+
+.selectRow{
+    margin:14px 0 4px;
+    width:100%;
+    max-width:440px;
+}
+
+.selectlabel{
+    font-size:.68em;
+    letter-spacing:3px;
+    color:#6a5a50;
+
+    text-transform:uppercase;
+
+    margin-bottom:7px;
+}
+
+.pillRow{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+.pill{
+    background:var(--wall);
+    color:#a89080;
+
+    border:1.5px solid #4a2020;
+
+    padding:7px 15px;
+
+    font-size:.72em;
+
+    letter-spacing:2px;
+
+    text-transform:2px;
+
+    cursor:pointer;
+
+    font-family:'Courier New',monospace;
+
+    transition:
+        border-color .15s,
+        color .15s,
+        box-shadow .15s;
+
+        min-height: 42px;
+}
+
+.pill:hover{
+    border-color:var(--bloodbright);
+    color:var(--bone);
+}
+
+.pill.selected{
+    background:var(--bloodbrigt);
+
+    color:#fff;
+
+    box-shadow:
+    0 0  10px rgba(200,20,20,.55);
+}
+
+#startBtn{
+    margin-top:18px;
+
+    background:var(--wall);
+    color:var(--bloodbright);
+
+    border:2px solid var(--blood);
+
+    padding:10px 26px;
+}
