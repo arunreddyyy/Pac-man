@@ -344,4 +344,223 @@ canvas{
     border:2px solid var(--blood);
 
     padding:10px 26px;
+
+    font-family:'Courier New',monospace;
+
+    font-size:1em;
+
+    letter-spacing:3px;
+
+    text-transform:uppercase;
+
+    cursor:pointer;
+
+    box-shadow:
+    0 0 12px rgba(120,0,0,.6);
+}
+
+#startBtn:hover{
+    background:var(--blood);
+    color:#fff;
+}
+
+#pauseBtn{
+    position:absolute;
+
+    right:8px;
+    top:42px;
+
+    z-index:30;
+
+    background:rgba(0,0,0,.72);
+
+    color:var(--bone);
+
+    border:1px soild var(--rot);
+
+    padding:7px 12px;
+
+    font-family:'Courier New',monospace;
+
+    font-size:.68em;
+
+    letter-spacing:2px;
+
+    text-transform:uppercase;
+
+    cursor:pointer;
+
+    display:none;
+}
+
+#pauseBtn:hover{
+    background:var(--wall);
+    color:var(--bloodbright);
+    border-color:var(-bloodbright);
+}
+
+#pauseOverlay{
+    position:absolute;
+    inset:0;
+
+    z-index:28;
+
+    display:none;
+
+    align-items:center;
+    justify-content:center;
+
+    flex-direction:column;
+
+    background:rgba(0,0,0,.82);
+
+    backdrop-filter:blur(4px);
+
+    color:var(--bone);
+
+    text-align:center;
+
+    letter-spacing:3px;
+}
+
+#pauseOverlay.show{
+    display:flex;
+}
+
+#pauseOverlay h2{
+    margin:0 0 12px;
+
+    color:var(--bloodbright);
+
+    border:2px solid var(--blood);
+
+    padding:10px 22px;
+
+    font-family:'Courier New',monospace;
+
+    letter-spacing:3px;
+
+    text-transform:uppercase;
+
+    cursor:pointer;
+}
+
+#resumeBtn:hover{
+    background:var(--blood);
+    color:#fff;
+}
+
+#levelBanner{
+    position:absolute;
+    inset:0;
+
+    z-index:25;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+    
+    flex-direction:column;
+
+    pointer-events:none;
+
+    opacity:0;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(80,0,0,.42),
+            rgba(0,0,0,.94) 68%
+       );
+
+       transition:opacity .15s;
+}
+
+#levelBanner.show{
+    opacity:1;
+}
+
+#levelBanner strong{
+    font-size:2.1em;
+
+    letter-spacing:7px;
+
+    color:var(--bloodbright);
+
+    text-shadow:
+    0 0 20px var(--bloodbright);
+
+    animation:titlepulse 1s infinite;
+}
+
+#levelBanner span{
+    margin-top:8px;
+
+    color:#c9b7aa;
+
+    letter-spacing:4px;
+
+    font-size:.7em;
+}
+
+#jumpscare{
+    position:fixed;
+    inset:0;
+
+    z-index:100;
+
+    display:none;
+
+    align-items:center;
+    justify-content:center;
+
+    background:#000;
+
+    overflow:hidden;
+}
+
+#jumpscare.show{
+    display:flex;
+}
+
+#caughtVideo{
+    width:100vw;
+    height:100vh;
+
+    object-fit:cover;
+
+    display:block;
+
+    background:block;
+
+    background:#000;
+}
+
+.hint{
+    color:#4a3a34;
+    font-size:.7em;
+
+    margin-top:8px;
+
+    letter-spacing:2px;
+
+    text-align:center;
+}
+
+@media(max-width:640px){
+
+    #hud{
+        font-size:.75em;
+    }
+
+    #hud > div{
+        min-width:90px;
+    }
+
+    #hud > div:nth-child(2){
+        order:3;
+
+        flex-basis:100;
+    }
 }
