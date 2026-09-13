@@ -303,5 +303,25 @@
     let level = 1;
     
 
+    let lives = 3;
+    let maxlives = 3;
+
+    let pelletsLeft = 0;
+    let totalPellets = 0;
+
+    let weaknessPoints = [];
+
+    let scaredTimer = 0;
+
+    let lastTime = 0;
+
+    let cherry = null;
+
+    let cherryTimer = 0;
+
+    let keys = {};
+
+    let audioStarted = false;
+
     
 })
