@@ -504,9 +504,267 @@
 
             for(let i = dirs.length -1;i>0;i--){
                 const j = Math.floor(Math.random()*(i+1));
+                [dirs[i],dirs[j]] = [dirs[j],dirs[i]];
+            }
 
+            for(const [dr,dc] of dirs){
+                const nr = r+dr;
+                const nc = c+dc;
 
+                if(nr>0 && nr< ROWS-1 && nc>0 && nc<COLS-1 && grid[nr][nc]===0){
+
+                
+                    grid[r+dr/2][c+dc/2] = 1;
+
+                    carve(nr,nc);
+                }
             }
         }
+    
+
+    carve(1,1);
+
+    for(let i=0;i<18;i++){
+
+        const r = 1 + Math.floor(Math.random()*(ROWS-2));
+
+        const c = 1 + Math.floor(Math.random()*(COLS-2));
+
+        if(grid[r][c] === 0 && (
+            grid[r-1]?.[c]===1 ||
+            grid[r+1]?.[c]===1 ||
+            grid[r]?.[c-1]===1 ||
+            grid[r]?.[c+1]===1    
+        )
+    ){
+        grid[r][c] = 1;
+     }
     }
+    return grid;
+    }
+
+
+    function is WeaknessPoint(r,c){
+        return weaknessPoints.some(p=>p, r===r && p.c===c);
+    }
+
+    function generateWeaknessPoints(){
+        weaknessPoints = [];
+
+        const candidates = [];
+
+        for(let r=1;r<ROWS-1;r++){
+            for(let c=1;c<COLS-1;c++){
+                if(maze[r][c] !== 1)
+                    continue;
+
+                if(Math.abs(r-1)+Math.abs(c-1)<5){
+                    continue;
+                }
+
+                if(Math.abs(r-9)+Math.abs(c-9)<3){
+                    continue;
+                }
+
+                candidates.push({
+                    r,c
+                });
+            }
+        }
+
+        for(let i = candidates.length-1;i>0;i--){
+            const j =Math.floor(Math.random()*(i+1));
+
+            [candidates[i],candidates[j]] = [candidates[j],candidates[i]];
+
+        }
+
+        weaknessPoints = candidates.slice(0,currentDifficulty.weaknessPoints);
+
+        updateHUD();
+        }
+
+        function consumeWeaknessPoints(r,c){
+            const index = weaknessPoints.findIndex(p=>p.r===r && p.c===c);
+            if(index === -1)
+                return false;
+
+            weaknessPoints.splice(index,1);
+
+            score += 75;
+
+            const until = performance.now() + currentDifficulty.scaredTime;
+
+            scaredTimer = currentDifficulty.scaredTime;
+
+            ghosts.forEach(g=>{
+                if(!g.dead){
+                    g.scared = true;
+
+                    g.scaredUntil = until;
+
+                }
+            });
+
+            collectSound();
+
+            updateHUD();
+
+            return true;
+        }
+
+        function resetGhosts(){
+
+            const s = ghostStarts;
+
+            const base = currentDifficulty.ghostSpeeds;
+
+            const scale = Math.max(0.72,1-(level-1)*0.045);
+
+            const count = Math.min(4,Math.max(3,level>=3 ? 4 : 3));
+
+            const names = [
+                "stalker",
+                "crawler",
+                "wraith",
+                "reaper"
+            ];
+
+            ghosts = Array.from({length:count},(_,i)=>({
+
+                r:s[i%3].r,
+                c:s[i%3].c,
+
+                homeR:s[i%3].r,
+                homeC:s[i%3].c,
+
+
+                color: currentTheme.ghosts[i%currentTheme.ghosts.length],
+
+                dir: i%2 ? {x:-1,y:0} : {x:1,y:0},
+
+                scared:false,
+
+                scaredUntil:0,
+
+                dead:false,
+
+                speed: (base[Math.min(i,base.length-1)] || 0.20) * scale,
+
+                name:names[i]
+            }));
+
+            moveTimersGhosts  =Array(count).fill(0);
+        }
+
+
+
+        function isWall(r,c){
+
+            if(r<0 || c<0 || r>= ROWS || c>= COLS){
+                return true;
+            }
+            return maze[r][c]===0;
+        }
+
+        function canMove(r,c){
+
+            return !isWall(r,c);
+        }
+        function distance(a,b){
+
+            return Math.hypot(a.r-b.r,a.c-b.c);
+        }
+
+        function updateHUD{
+            if(scoreE1)
+                scoreE1.textContent = score;
+
+            if(levelE1)
+                levelE1.textContent = level;
+
+            if(livesE1){
+
+                livesE1.textContent = "●".repeat(Math.max(0,lives));
+
+            }
+
+            if(lifeCountE1){
+                lifeCountE1.textContent = `${lives} / ${maxLives}`;
+            }
+
+            if(weaknessCountE1){
+
+                weaknessCountE1.textContent = weaknessPoints.lenght;
+            }
+
+            if(progressBar){
+
+                const collected = totalPellets - pelletsLeft;
+
+                const pct = totalPellets>0 ? (collected/totalPellets)*100 : 0;
+
+                progressBar.style.width = `${pct}%`;
+            }
+        }
+
+
+        function applyGeneratedMaze(){
+            maze = makeMaze();
+
+            player.r = 1;
+            player.c = 1;
+            player.x = 1;
+            player.y = 1;
+
+            player.dir = {x:0,y:0};
+
+            player.nextDir = {x:0,y:0};
+
+
+            totalPellets = 0;
+
+            pelletsLeft = 0;
+
+            for(let r=1; r<ROWS-1;r++){
+                for(let c=1;c<COLS-1;c++){
+                    if(maze[r][c]===1){
+
+                        if(r===1 && c===1)
+                            continue;
+
+                        if(Math.abs(r-9)+Math.abs(c-9)<2){
+                            maze[r][c] = 2;
+
+                            totalPellets++;
+                            pelletsLeft++;
+                        }
+                    }
+                }
+
+                maze[1][1] = 1;
+
+                maze[9][9] = 1;
+                maze[9][10] = 1;
+                maze[10][9] = 1;
+                maze[10][10] = 1;
+
+
+                maze[ROWS-2][COLS-2] = 1;
+
+                generateWeaknessPoints();
+
+                resetGhosts();
+
+                cherry = null;
+
+                cherryTimer = randomCherryTime();
+
+                updateHUD();
+            }
+
+            function randomCherryTime(){
+                const min = currentDifficulty.cherryMin;
+            }
+        }
 })
