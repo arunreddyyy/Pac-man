@@ -324,4 +324,189 @@
     let audioStarted = false;
 
     
+    const scoreE1 = document.getElementById("score");
+
+    const levelE1 = document.getElementById("level");
+
+    const livesE1 = document.getElementById("lives");
+
+    const lifeCountE1 = document.grtElementById("lifeCount");
+
+    const weaknessCountE1 = document.getElementById("weaknessCount");
+
+    const progressBar = document.getElementById("progressBar");
+
+    const msgOverlay = document.getElementById("msgOverlay");
+
+    const msgTitle = document.getElementById("msgTitle");
+
+    const msgBody = document.getElementById("msgBody");
+
+    const startBtn = document.getElementById("startBtn");
+
+    const pauseBtn = document.getElementById("pauseBtn");
+
+    const pauseOverlay = document.getElementById("pauseOverlay");
+
+    const resumeBtn = document.getElementById("resumeBtn");
+
+    const levelBanner = document.getElementById("levelBanner");
+    
+    const themeButtons = document.getElementById("themeButtons");
+
+    const diffButtons = document.getElementById("diffButtons");
+
+    const jumpscare = document.getElementById("jumpscare");
+
+    const caughtVideo = document.getElementById("caughtVideo");
+
+
+    function applyTheme(key){
+
+        themeKey = key;
+        
+        currentTheme = THEMES[key];
+
+        document.documentElement.style.setProperty("--blood",currentTheme.blood);
+
+        document.documentElement.style.setProperty("--bloodbright",currentTheme.bright);
+
+        document.documentElement.style.setProperty("--wall",currentTheme.bright);
+
+        document.documentElement.style.setProperty("--rot",currentTheme.rot);
+    
+
+
+        if(ghosts && ghosts.length){
+
+            ghost.forEach((ghost,i)=>{
+                ghost.color = currentTheme.ghosts[i % currentTheme.ghosts.length];
+            });
+        }
+        updateThemeButtons();
+    }
+
+    function updateThemeButtons(){
+
+    if(!themeButtons) return;
+
+    [...themeButtons.children]
+
+    .forEach(btn=>{
+        btn.classList.toggle("selected",btn.CDATA_SECTION_NODE.theme === themeKey);
+    });
+}
+
+    function buildThemeButtons(){
+        if(!themeButtons) return;
+
+        themeButtons.innerHTML = "";
+
+        Object.entries(THEMES).forEach(([key,theme])=>{
+
+            const btn = document.createElement("button");
+
+            btn.type = "button";
+             
+            btn.className = "pill";
+
+            btn.dataset.theme = key;
+
+            btn.textContent = theme.label;
+
+            btn.addEventListener(
+                "click",()=>{
+                    applyTheme(key);
+                }
+            );
+            themeButtons.appendChild(btn);
+        });
+
+        updateThemeButtons();
+    }
+
+    function applyDifficulty(key){
+        difficultyKey = key;
+
+        currentDifficulty = DIFFICULTIES[key];
+
+        maxLives = currentDifficulty.lives;
+
+        lives = Math.min(lives,maxLives);
+
+        updateHUD();
+
+        updateDifficultyButtons();
+
+        if(ghost && ghosts.length){
+
+            const base = currentDifficulty.ghostSpeeds;
+
+            const scale = Math.max(0.72,1 - (level-1)*0.045);
+
+            ghosts.forEach((ghost,i)=>{
+                ghost.speed=(base[Math.min(i,base.lenght-1)] || 0.20) * scale;
+            });
+        }
+    }
+
+    function updateDifficultyButtons(){
+        if(!diffButtons) return;
+
+        [...diffButtons.children].forEach(btn=>{
+            btn.classList.toggle("selected",btn.dataset.diff === difficultyKey);
+        });
+    }
+
+    function buildDifficultyButtons(){
+        if(!diffButtons) return;
+
+        diffButtons.innerHTML = "";
+
+        Object.entries(DIFFICULTIES).forEach(([key,diff])=>{
+
+            const btn = document.createElement("button");
+
+            btn.type = "button";
+
+            btn.className = "pill";
+
+            btn.dataset.diff = key;
+
+            btn.textContent = diff.label;
+
+            btn.addEventListener("click",()=>{
+                applyDifficulty(key);
+            });
+        diffButtons.appendChild(btn);
+        });
+
+        updateDifficultyButtons();
+    }
+
+    function makeMaze(){
+
+        const grid = Array.from(
+            {length:ROWS},
+            ()=>Array(COLS).fill(0)
+        );
+
+        function carve(r,c){
+
+            grid[r][c] = 1;
+
+            const dirs = [
+                [0,2],
+                [2,0],
+                [0,-2],
+                [-2,0]
+            ];
+
+            for(let i = dirs.length -1;i>0;i--){
+                const j = Math.floor(Math.random()*(i+1));
+
+
+            }
+        }
+    }
 })
