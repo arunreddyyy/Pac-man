@@ -21,8 +21,8 @@
         osc.type = type||'sine';
 
         osc.frequency.setValueAtTime(
-            vol||0.15,
-            t0+0.02
+           freq,
+           t0
         );
 
         gain.gain.exponentialRampToValueAtTime(
@@ -69,10 +69,10 @@
         for(let i=0; i<data.length;i++){
             data[i] = 
                 (Math.random()*2-1) *
-                Math.pow(1-i/data.lenght,1.8);
+                Math.pow(1-i/data.length,1.8);
         }
 
-        const src = actx.createbufferSource();
+        const src = actx.createBufferSource();
         const gain = actx.createGain();
 
         src.buffer = buffer;
@@ -182,7 +182,7 @@
             weakness:"#8a5cff"
         },
 
-        forst:{
+        frost:{
             label:"Frozen Wraiths",
 
             blood:"#174b5a",
@@ -229,7 +229,7 @@
             cherryMin:14000,
             cherryMax:20000,
             cherryLife:8000,
-            loopchance:0.22
+            loopChance:0.22
         },
 
         hard:{
@@ -253,7 +253,7 @@
             cherryMin:22000,
             cherryMax:30000,
             cherryLife:5000,
-            loopchance:0.08
+            loopChance:0.08
         }
     };
 
@@ -293,6 +293,10 @@
         {r:10,c:9}
     ];
 
+    let moveTimers = {
+        player: 0
+    };
+
     let moveTimersGhosts = [];
 
     let running = false;
@@ -304,7 +308,7 @@
     
 
     let lives = 3;
-    let maxlives = 3;
+    let maxLives = 3;
 
     let pelletsLeft = 0;
     let totalPellets = 0;
@@ -330,7 +334,7 @@
 
     const livesE1 = document.getElementById("lives");
 
-    const lifeCountE1 = document.grtElementById("lifeCount");
+    const lifeCountE1 = document.getElementById("lifeCount");
 
     const weaknessCountE1 = document.getElementById("weaknessCount");
 
@@ -371,7 +375,7 @@
 
         document.documentElement.style.setProperty("--bloodbright",currentTheme.bright);
 
-        document.documentElement.style.setProperty("--wall",currentTheme.bright);
+        document.documentElement.style.setProperty("--wall",currentTheme.wall);
 
         document.documentElement.style.setProperty("--rot",currentTheme.rot);
     
@@ -379,7 +383,7 @@
 
         if(ghosts && ghosts.length){
 
-            ghost.forEach((ghost,i)=>{
+            ghosts.forEach((ghost,i)=>{
                 ghost.color = currentTheme.ghosts[i % currentTheme.ghosts.length];
             });
         }
@@ -393,7 +397,7 @@
     [...themeButtons.children]
 
     .forEach(btn=>{
-        btn.classList.toggle("selected",btn.CDATA_SECTION_NODE.theme === themeKey);
+        btn.classList.toggle("selected",btn.dataset.theme === themeKey);
     });
 }
 
@@ -438,14 +442,14 @@
 
         updateDifficultyButtons();
 
-        if(ghost && ghosts.length){
+        if(ghosts && ghosts.length){
 
             const base = currentDifficulty.ghostSpeeds;
 
             const scale = Math.max(0.72,1 - (level-1)*0.045);
 
             ghosts.forEach((ghost,i)=>{
-                ghost.speed=(base[Math.min(i,base.lenght-1)] || 0.20) * scale;
+                ghost.speed=(base[Math.min(i,base.length-1)] || 0.20) * scale;
             });
         }
     }
@@ -544,8 +548,8 @@
     }
 
 
-    function is WeaknessPoint(r,c){
-        return weaknessPoints.some(p=>p, r===r && p.c===c);
+    function isWeaknessPoint(r,c){
+        return weaknessPoints.some(p=>p.r===r && p.c===c);
     }
 
     function generateWeaknessPoints(){
@@ -584,7 +588,7 @@
         updateHUD();
         }
 
-        function consumeWeaknessPoints(r,c){
+        function consumeWeaknessPoint(r,c){
             const index = weaknessPoints.findIndex(p=>p.r===r && p.c===c);
             if(index === -1)
                 return false;
@@ -676,7 +680,7 @@
             return Math.hypot(a.r-b.r,a.c-b.c);
         }
 
-        function updateHUD{
+        function updateHUD(){
             if(scoreE1)
                 scoreE1.textContent = score;
 
@@ -695,7 +699,7 @@
 
             if(weaknessCountE1){
 
-                weaknessCountE1.textContent = weaknessPoints.lenght;
+                weaknessCountE1.textContent = weaknessPoints.length;
             }
 
             if(progressBar){
@@ -709,59 +713,72 @@
         }
 
 
-        function applyGeneratedMaze(){
-            maze = makeMaze();
+       function applyGeneratedMaze(){
 
-            player.r = 1;
-            player.c = 1;
-            player.x = 1;
-            player.y = 1;
+    maze = makeMaze();
 
-            player.dir = {x:0,y:0};
+    player.r = 1;
+    player.c = 1;
+    player.x = 1;
+    player.y = 1;
 
-            player.nextDir = {x:0,y:0};
+    player.dir = {
+        x:0,
+        y:0
+    };
 
+    player.nextDir = {
+        x:0,
+        y:0
+    };
 
-            totalPellets = 0;
+    totalPellets = 0;
+    pelletsLeft = 0;
 
-            pelletsLeft = 0;
+    for(let r=1; r<ROWS-1; r++){
 
-            for(let r=1; r<ROWS-1;r++){
-                for(let c=1;c<COLS-1;c++){
-                    if(maze[r][c]===1){
+        for(let c=1; c<COLS-1; c++){
 
-                        if(r===1 && c===1)
-                            continue;
+            if(maze[r][c]===1){
 
-                        if(Math.abs(r-9)+Math.abs(c-9)<2){
-                            maze[r][c] = 2;
-
-                            totalPellets++;
-                            pelletsLeft++;
-                        }
-                    }
+                if(r===1 && c===1){
+                    continue;
                 }
 
-                maze[1][1] = 1;
+                if(
+                    Math.abs(r-9)+
+                    Math.abs(c-9)<2
+                ){
+                    continue;
+                }
 
-                maze[9][9] = 1;
-                maze[9][10] = 1;
-                maze[10][9] = 1;
-                maze[10][10] = 1;
+                maze[r][c] = 2;
 
-
-                maze[ROWS-2][COLS-2] = 1;
-
-                generateWeaknessPoints();
-
-                resetGhosts();
-
-                cherry = null;
-
-                cherryTimer = randomCherryTime();
-
-                updateHUD();
+                totalPellets++;
+                pelletsLeft++;
             }
+        }
+    }
+
+    maze[1][1] = 1;
+
+    maze[9][9] = 1;
+    maze[9][10] = 1;
+    maze[10][9] = 1;
+    maze[10][10] = 1;
+
+    maze[ROWS-2][COLS-2] = 1;
+
+    generateWeaknessPoints();
+
+    resetGhosts();
+
+    cherry = null;
+
+    cherryTimer = randomCherryTime();
+
+    updateHUD();
+}
 
             function randomCherryTime(){
                 const min = currentDifficulty.cherryMin;
@@ -785,20 +802,22 @@
             }
 
             function updatePlayer(dt){
-                moveTimersGhosts.player += dt;
+                moveTimers.player += dt;
 
                 const speed = 0.115;
 
                 const stepTime = speed*1000;
 
-                if(moveTimersGhosts.player < stepTime)
+                if(moveTimers.player < stepTime)
                     return;
 
-                moveTimersGhosts.player = 0;
+                moveTimers.player = 0;
 
                 tryPlayerDirection();
 
                 const nc = player.c + player.dir.x;
+
+                const nr = player.r + player.dir.y;
 
                 if(canMove(nr,nc)){
 
@@ -823,13 +842,13 @@
                 }
 
                 if(isWeaknessPoint(r,c)){
-                    consumeWeaknessPoints(r,c);
+                    consumeWeaknessPoint(r,c);
                 }
 
                 updateHUD();
 
                 if(
-                    pelletsLeft <= 0 && weaknessPoints.lenght<=0
+                    pelletsLeft <= 0 && weaknessPoints.length<=0
                 ){
                     nextLevel();
                 }
@@ -877,7 +896,7 @@
 
 
                 if(Math.random() < currentDifficulty.loopChance){
-                    g.dir = valid[Math.floor(Math.random()*valid.lenght)];
+                    g.dir = valid[Math.floor(Math.random()*valid.length)];
                 }else{
                     g.dir = valid[0];
                 }
@@ -887,7 +906,7 @@
 
                 if(g.scared && performance.now() >= g.scaredUntil){
                     g.scared = false;
-                    g.sccaredUntil = 0;
+                    g.scaredUntil = 0;
                 }
 
                 if(g.dead){
@@ -908,7 +927,7 @@
 
                 moveTimersGhosts[index] = 0;
 
-                cho0seGhostDirection(g);
+                chooseGhostDirection(g);
 
                 const nr = g.r+g.dir.y;
 
@@ -1012,7 +1031,7 @@
                     levelBanner.querySelector("strong")
                     .textContent = `LEVEL ${level}`;
 
-                    levelBanner.classListremove("show");
+                    levelBanner.classList.remove("show");
 
                     setTimeout(()=>{
                         levelBanner.classList.remove("show");
@@ -1024,52 +1043,78 @@
 
                     running = true;
 
-                    lasttime = performance.now();
+                    lastTime = performance.now();
 
 
                 },1000);
 
             }
 
-            function drawMaze(){
+           function drawMaze(){
 
-                ctx.fillStyle = currentTheme.floor;
+    ctx.fillStyle = currentTheme.floor;
 
-                ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-                for(let r = 0;r<ROWS;r++){
-                    for(let c=0;c<COLS;c++){
+    for(let r=0; r<ROWS; r++){
 
-                        const cell = maze[r][c];
+        for(let c=0; c<COLS; c++){
 
-                        const x = c*TILE;
+            const cell = maze[r][c];
 
-                        const y = r*TILE;
+            const x = c*TILE;
+            const y = r*TILE;
 
-                        ctx.fillStyle = currentTheme.wall;
+            if(cell===0){
 
-                        ctx.fillRect(x,y,TILE,TILE);
+                ctx.fillStyle =
+                    currentTheme.wall;
 
-                        ctx.strokeStyle = currentTheme.rot;
+                ctx.fillRect(
+                    x,
+                    y,
+                    TILE,
+                    TILE
+                );
 
-                        ctx.lineWidth = 1;
+                ctx.strokeStyle =
+                    currentTheme.rot;
 
-                        ctx.strokeRect(x+.5,y+.5,TILE-1,TILE-1);
-                    } else if (cell===2){
-                        ctx.fillStyle = currentTheme.pellet;
+                ctx.lineWidth = 1;
 
-                        ctx.beginPath();
+                ctx.strokeRect(
+                    x+.5,
+                    y+.5,
+                    TILE-1,
+                    TILE-1
+                );
 
-                        ctx.arc(
-                            x+TILE/2,y+TILE/2,2.2,0,Math.PI*2
-                        );
+            }
+            else if(cell===2){
 
-                        ctx.fill();
-                    }
-                }
+                ctx.fillStyle =
+                    currentTheme.pellet;
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x+TILE/2,
+                    y+TILE/2,
+                    2.2,
+                    0,
+                    Math.PI*2
+                );
+
+                ctx.fill();
             }
         }
-
+    }
+}
 
       function drawWeaknesspoints(){
 
@@ -1130,7 +1175,7 @@
 
         ctx.shadowBlur = 14;
 
-        ctx.shadowcolor = "#ffd83d";
+        ctx.shadowColor = "#ffd83d";
         ctx.beginPath();
 
         let angle = Math.atan2(player.dir.y,player.dir.x);
@@ -1202,7 +1247,7 @@
         const waves = 4;
 
         for(let i=waves;i>=0;i--){
-            const xx = -w/2+(i%2===0 ? 4:0);
+            const xx = -w/2+i*(w/waves);
 
             const yy = h/2 + (i%2===0 ? 4:0);
 
@@ -1270,5 +1315,459 @@
         ctx.beginPath();
 
         ctx.moveTo(0,-2);
+
+        ctx.quadraticCurveTo(2,-10,8,-12);
+
+        ctx.stroke();
+
+        ctx.restore();
       }
-    })
+
+
+      function render(){
+
+        drawMaze();
+
+        drawWeaknesspoints();
+
+        drawCherry();
+
+        for(const ghost of ghosts){
+            drawGhost(ghost);
+
+        }
+        drawPlayer();
+      }
+
+
+      function spawnCherry(){
+
+        const candidates = [];
+
+        for(let r = 1; r < ROWS ; r++){
+            for(let c = 1; c < COLS ; c++){
+
+                if(
+                    maze[r][c]===1 && !isWeaknessPoint(r,c) && !(r===player.r&&c===player.c)
+                ){
+
+                        candidates.push({
+                            r,c
+                        
+                        });
+                    } 
+            }
+        }
+        if(!candidates.length)
+            return;
+
+        cherry = candidates[Math.floor(Math.random()*candidates.length)];
+
+        cherryTimer = currentDifficulty.cherryLife;
+      }
+
+      function updateCherry(dt){
+        
+        if(cherry){
+
+            cherryTimer -= dt;
+
+            if(cherryTimer <= 0){
+                cherry = null;
+
+                cherryTimer = randomCherryTime();
+            }
+            return;
+        }
+        cherryTimer -= dt;
+
+        if(cherryTimer<=0){
+
+            spawnCherry();
+        }
+      }
+
+      function collectCherry(){
+
+        if(!cherry || player.r!==cherry.r || player.c!==cherry.c){
+            return;
+                }
+                score += 500;
+
+                const until = performance.now()+currentDifficulty.scaredTime;
+
+                scaredTimer = currentDifficulty.scaredTime;
+
+                ghosts.forEach(g=>{
+
+                    if(!g.dead){
+                        g.scared = true;
+
+                        g.scaredUntil = until;
+                    }
+                });
+
+                cherry = null;
+
+                cherryTimer = randomCherryTime();
+
+                collectSound();
+
+                updateHUD();
+      }
+
+      function update(dt){
+
+        if(!running || paused)
+            return;
+
+        updatePlayer(dt);
+
+        collectCurrentCell();
+
+        collectCherry();
+
+        updateCherry(dt);
+
+        for(let i=0;i<ghosts.length;i++){
+            updateGhost(ghosts[i],i,dt);
+
+            handleGhostCollision(ghosts[i]);
+        }
+
+        if(scaredTimer>0){
+            scaredTimer = Math.max(0,scaredTimer-dt);
+        }
+      }
+
+      function loop(now){
+
+        const dt = Math.min(100,now-lastTime);
+
+        lastTime = now;
+
+        update(dt);
+
+        render();
+
+        requestAnimationFrame(loop);
+      }
+
+      function startGame(){
+
+        ensureAudio();
+
+        if(actx && actx.state==="suspended"){
+            actx.resume();
+        }
+
+        if(caughtVideo){
+
+            caughtVideo.muted = false;
+            caughtVideo.volume = 1;
+
+            caughtVideo.load();
+
+            const prime = caughtVideo.play();
+
+            if(prime && prime.then){
+                prime.then(()=>{
+
+                    caughtVideo.pause();
+
+                    caughtVideo.currentTime = 0;
+                }).catch(()=>{});
+            }
+        }
+
+        score = 0;
+
+        level = 1;
+
+        maxLives = currentDifficulty.lives;
+
+        lives = maxLives;
+
+        gameOver = false;
+
+        running = true;
+
+        moveTimers.player = 0;
+
+        moveTimersGhosts = [];
+
+        applyGeneratedMaze();
+
+        msgOverlay.style.display = "none";
+
+        pauseBtn.style.display = "block";
+
+        lastTime = performance.now();
+
+        updateHUD();
+      }
+
+      function endGame(){
+
+        running = false;
+
+        gameOver = true;
+
+        pauseBtn.style.display = "none";
+
+        msgOverlay.style.display = "flex";
+
+        msgTitle.textContent = "THE HOLLOW HAS YOU....";
+
+        msgBody.innerHTML = 
+        `
+        Your sanity reached zero.
+        <br><br>
+        FINAL SANITY:
+        <strong>${score}</strong>
+        <br>
+        LEVEL:
+        <strong>${level}</strong>
+        `;
+
+        startBtn.textContent = "Lets do it Again";
+
+        scareSound();
+      }
+
+      function triggerJumpscare(){
+
+        running = false;
+
+        if(!jumpscare)
+            return;
+
+        jumpscare.classList.add("show");
+
+        if(!caughtVideo)
+            return;
+
+        try{
+            caughtVideo.pause();
+
+            caughtVideo.currentTime = 0;
+
+            caughtVideo.muted = false;
+
+            caughtVideo.volume = 1;
+
+            caughtVideo.onended = finishJumpscare;
+
+            const promise = caughtVideo.play();
+
+            if(promise && promise.catch){
+                promise.catch(()=>{
+                    caughtVideo.load();
+
+                    const retry = caughtVideo.play();
+
+                    if(retry && retry.catch){
+                        retry.catch(()=>{
+                            setTimeout(finishJumpscare,2500);
+
+                        });
+                    }
+                });
+            }
+        
+            setTimeout(finishJumpscare,12000);
+        
+        }catch(e){
+            finishJumpscare();
+        }
+      }
+
+      let jumpFinished = false;
+
+      function finishJumpscare(){
+
+        if(jumpFinished) 
+            return;
+
+        jumpFinished = true;
+
+        setTimeout(()=>{
+            
+            jumpFinished = false;
+
+            if(caughtVideo){
+
+                caughtVideo.pause();
+
+                try{
+                    caughtVideo.currentTime = 0;
+                }catch(e){}
+
+            }
+
+            jumpscare.classList.remove("show");
+
+            if(gameOver){
+                msgOverlay.style.display = "flex";
+            }
+
+
+        },100);
+      }
+
+
+      function togglePause(){
+
+        if(!running || gameOver)
+            return;
+
+        paused = !paused;
+
+        if(paused){
+
+            pauseOverlay.classList.add("show");
+
+            pauseBtn.textContent = "Resume [P]";
+        }else{
+
+            pauseOverlay.classList.remove("show");
+
+            pauseBtn.textContent = "pause [P]";
+
+            lastTime = performance.now();
+        }
+      }
+
+      document.addEventListener("keydown",e=>{
+
+        const key = e.key.toLowerCase();
+
+        if(
+            [
+                "arrowup",
+                "arrowdown",
+                "arrowleft",
+                "arrowright",
+                "w",
+                "a",
+                "s",
+                "d",
+                "p"
+            ].includes(key)
+
+        ){
+
+            e.preventDefault();
+        }
+
+        if(key==="p"){
+
+            togglePause();
+
+            return;
+
+        }
+
+        if(
+            key==="arrowup" || key==="w"
+        ){
+            player.nextDir = {
+                x:0,y:-1
+            };
+        }
+
+        if(
+            key==="arrowdown" || key==="s"
+        ){
+            player.nextDir = {
+                x:0,y:1
+            };
+        }
+
+        if(
+            key==="arrowleft" || key==="a"
+        ){
+            player.nextDir = {
+                x:-1,y:0
+            };
+        }
+
+        if(
+            key==="arrowright" || key==="d"
+        ){
+            player.nextDir = {
+                x:1,y:0
+            };
+        }
+    });
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    canvas.addEventListener("touchstart",e=>{
+
+        const t = e.changedTouches[0];
+
+        touchStartX = t.clientX;
+
+        touchStartY = t.clientY;
+    },
+    {passive:true});
+
+  canvas.addEventListener("touchend",e=>{
+
+    const t = e.changedTouches[0];
+
+    const dx =
+        t.clientX-touchStartX;
+
+    const dy =
+        t.clientY-touchStartY;
+
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    if(Math.max(ax,ay)<20){
+        return;
+    }
+
+    if(ax>ay){
+
+        player.nextDir =
+            dx>0
+            ? {x:1,y:0}
+            : {x:-1,y:0};
+
+    }else{
+
+        player.nextDir =
+            dy>0
+            ? {x:0,y:1}
+            : {x:0,y:-1};
+    }
+
+},{passive:true});
+
+startBtn.addEventListener("click",startGame);
+
+pauseBtn.addEventListener("click",togglePause);
+
+resumeBtn.addEventListener("click",togglePause);
+
+
+buildThemeButtons();
+
+buildDifficultyButtons();
+
+applyTheme(themeKey);
+
+applyDifficulty(difficultyKey);
+
+updateHUD();
+
+requestAnimationFrame(t=>{
+    lastTime = t;
+    loop(t);
+});
+
+        })();

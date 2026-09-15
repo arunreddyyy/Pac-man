@@ -109,7 +109,7 @@ h1{
 }
 
 #wrap{
-    position:block;
+    position:relative;
 
     border:3px solid var(--rot);
 
@@ -278,7 +278,7 @@ canvas{
     max-width:440px;
 }
 
-.selectlabel{
+.selectLabel{
     font-size:.68em;
     letter-spacing:3px;
     color:#6a5a50;
@@ -307,7 +307,7 @@ canvas{
 
     letter-spacing:2px;
 
-    text-transform:2px;
+    text-transform:uppercase;
 
     cursor:pointer;
 
@@ -327,7 +327,7 @@ canvas{
 }
 
 .pill.selected{
-    background:var(--bloodbrigt);
+    background:var(--bloodbright);
 
     color:#fff;
 
@@ -376,7 +376,7 @@ canvas{
 
     color:var(--bone);
 
-    border:1px soild var(--rot);
+    border:1px solid var(--rot);
 
     padding:7px 12px;
 
@@ -396,7 +396,7 @@ canvas{
 #pauseBtn:hover{
     background:var(--wall);
     color:var(--bloodbright);
-    border-color:var(-bloodbright);
+    border-color:var(--bloodbright);
 }
 
 #pauseOverlay{
@@ -439,6 +439,23 @@ canvas{
     font-family:'Courier New',monospace;
 
     letter-spacing:3px;
+
+    text-transform:uppercase;
+
+    
+}
+
+#resumeBtn{
+    background:var(--wall);
+    color:var(--bloodbright);
+
+    border:2px solid var(--blood);
+
+    padding:9px 22px;
+
+    font-family:'Courier New',monospace;
+
+    letter-spacing:2px;
 
     text-transform:uppercase;
 
@@ -532,9 +549,9 @@ canvas{
 
     display:block;
 
-    background:block;
-
     background:#000;
+
+   
 }
 
 .hint{

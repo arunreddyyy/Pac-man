@@ -48,7 +48,7 @@
                 <span>THE HOLLOW DEEPENS</span>
             </div>
 
-            <div id="pauseeOverlay">
+            <div id="pauseOverlay">
                 <h2>PAUSED</h2>
                 <p>The Hollow is waiting.</p>
                 <button id="resumeBtn" type="button">Resume</button>
@@ -69,10 +69,15 @@
 
                 <div class="selectRow">
                     <div class="selectLabel">Choose your nightmare</div>
+                    <div class="pillRow" id="themeButtons"></div>
+                </div>
+
+                <div class="selectRow">
+                    <div class="selectLabel">Choose difficulty</div>
                     <div class="pillRow" id="diffButtons"></div>
                 </div>
 
-                <button id="startBtn">Descend</button>
+                <button id="startBtn">Here we go</button>
 
                 <div class="hint">
                     sound recommended. Turn the lights down.
@@ -85,13 +90,13 @@
             <video
             id="caughtVideo"
             playsinline
-            preloadd="auto"
+            preload="auto"
             controlslist="nodownload"
             disablepictureinpicture>
         
         </video>
         </div>
 
-        <script src="pac.css"></script>
+        <script src="pac.js"></script>
     </body>
 </html>
