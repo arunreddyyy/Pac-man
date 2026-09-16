@@ -130,7 +130,7 @@
             wall:"#2b0d10",
             rot:"#3a2a1a",
 
-            ghost:[
+            ghosts:[
                 "#d41414",
                 "#ff5252",
                 "#8b0000",
@@ -290,6 +290,7 @@
     let ghostStarts = [
         {r:9,c:9},
         {r:9,c:10},
+        {r:10,c:9},
         {r:10,c:9}
     ];
 
@@ -1050,8 +1051,12 @@
 
             }
 
-           function drawMaze(){
-
+          function drawMaze(){
+                if(!maze.length){
+                    ctx.fillStyle = currentTheme.floor;
+                    ctx.fillRect(0,0,canvas.width,canvas.height);
+                    return; 
+                }
     ctx.fillStyle = currentTheme.floor;
 
     ctx.fillRect(

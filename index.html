@@ -2,13 +2,14 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Maze of The Hollow</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <title>Maze of the Hollow</title>
         <link rel="stylesheet" href="pac.css">
     </head>
 
     <body>
 
-        <div id = "grain"></div>
+        <div id ="grain"></div>
         <div id="flicker"></div>
         
         <h1>Maze of the Hollow</h1>
@@ -37,6 +38,12 @@
                     <span id="lives">●●●</span>
                     <small id="lifeCount">3 / 3</small>
                 </div>
+            </div>
+
+            <div id="progress">
+                <span id="progressBar">
+                    
+                </span>
             </div>
 
             <button id="pauseBtn" type="button">Pause [P]</button>
@@ -77,7 +84,7 @@
                     <div class="pillRow" id="diffButtons"></div>
                 </div>
 
-                <button id="startBtn">Here we go</button>
+                <button id="startBtn" type ="button">Here we go</button>
 
                 <div class="hint">
                     sound recommended. Turn the lights down.
@@ -93,8 +100,14 @@
             preload="auto"
             controlslist="nodownload"
             disablepictureinpicture>
+            <source src="caught.mp4" type="video/mp4">
+
+           
         
         </video>
+         <div id="jumpscareFallback">It found you
+                
+            </div>
         </div>
 
         <script src="pac.js"></script>
