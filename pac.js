@@ -550,75 +550,122 @@
     }
 
 
-    function isWeaknessPoint(r,c){
-        return weaknessPoints.some(p=>p.r===r && p.c===c);
+  function isWeaknessPoint(r,c){
+    return weaknessPoints.some(
+        p => p.r === r && p.c === c
+    );
+}
+
+function generateWeaknessPoints(){
+    weaknessPoints = [];
+
+    const candidates = [];
+
+    for(
+        let r = 1;
+        r < ROWS - 1;
+        r++
+    ){
+        for(
+            let c = 1;
+            c < COLS - 1;
+            c++
+        ){
+            if(maze[r][c] !== 1){
+                continue;
+            }
+
+            if(
+                Math.abs(r - 1) +
+                Math.abs(c - 1) < 5
+            ){
+                continue;
+            }
+
+            if(
+                Math.abs(r - 9) +
+                Math.abs(c - 9) < 3
+            ){
+                continue;
+            }
+
+            candidates.push({
+                r:r,
+                c:c
+            });
+        }
     }
 
-    function generateWeaknessPoints(){
-        weaknessPoints = [];
+    for(
+        let i = candidates.length - 1;
+        i > 0;
+        i--
+    ){
+        const j =
+            Math.floor(
+                Math.random() * (i + 1)
+            );
 
-        const candidates = [];
+        [
+            candidates[i],
+            candidates[j]
+        ] = [
+            candidates[j],
+            candidates[i]
+        ];
+    }
 
-        for(let r=1;r<ROWS-1;r++){
-            for(let c=1;c<COLS-1;c++){
-                if(maze[r][c] !== 1)
-                    continue;
+    weaknessPoints =
+        candidates.slice(
+            0,
+            Math.min(
+                currentDifficulty.weaknessPoints,
+                candidates.length
+            )
+        );
 
-                if(Math.abs(r-1)+Math.abs(c-1)<5){
-                    continue;
-                }
+    updateHUD();
+}
 
-                if(Math.abs(r-9)+Math.abs(c-9)<3){
-                    continue;
-                }
+function consumeWeaknessPoint(r,c){
+    const index =
+        weaknessPoints.findIndex(
+            p =>
+                p.r === r &&
+                p.c === c
+        );
 
-                candidates.push({
-                    r,c
-                });
-            }
+    if(index === -1){
+        return false;
+    }
+
+    weaknessPoints.splice(
+        index,
+        1
+    );
+
+    score += 75;
+
+    const until =
+        performance.now() +
+        currentDifficulty.scaredTime;
+
+    scaredTimer =
+        currentDifficulty.scaredTime;
+
+    ghosts.forEach(g=>{
+        if(!g.dead){
+            g.scared = true;
+            g.scaredUntil = until;
         }
+    });
 
-        for(let i = candidates.length-1;i>0;i--){
-            const j =Math.floor(Math.random()*(i+1));
+    collectSound();
 
-            [candidates[i],candidates[j]] = [candidates[j],candidates[i]];
+    updateHUD();
 
-        }
-
-        weaknessPoints = candidates.slice(0,currentDifficulty.weaknessPoints);
-
-        updateHUD();
-        }
-
-        function consumeWeaknessPoint(r,c){
-            const index = weaknessPoints.findIndex(p=>p.r===r && p.c===c);
-            if(index === -1)
-                return false;
-
-            weaknessPoints.splice(index,1);
-
-            score += 75;
-
-            const until = performance.now() + currentDifficulty.scaredTime;
-
-            scaredTimer = currentDifficulty.scaredTime;
-
-            ghosts.forEach(g=>{
-                if(!g.dead){
-                    g.scared = true;
-
-                    g.scaredUntil = until;
-
-                }
-            });
-
-            collectSound();
-
-            updateHUD();
-
-            return true;
-        }
-
+    return true;
+}
         function resetGhosts(){
 
             const s = ghostStarts;
@@ -819,12 +866,16 @@
         }
 
 
-       function applyGeneratedMaze(){
+    function applyGeneratedMaze(){
 
     maze = makeMaze();
 
     player.r = 1;
     player.c = 1;
+
+    player.prevR = 1;
+    player.prevC = 1;
+
     player.x = 1;
     player.y = 1;
 
@@ -838,42 +889,71 @@
         y:0
     };
 
+    moveTimers.player = 0;
+
     totalPellets = 0;
     pelletsLeft = 0;
 
-    for(let r=1; r<ROWS-1; r++){
+    for(
+        let r = 1;
+        r < ROWS - 1;
+        r++
+    ){
 
-        for(let c=1; c<COLS-1; c++){
+        for(
+            let c = 1;
+            c < COLS - 1;
+            c++
+        ){
 
-            if(maze[r][c]===1){
-
-                if(r===1 && c===1){
-                    continue;
-                }
-
-                if(
-                    Math.abs(r-9)+
-                    Math.abs(c-9)<2
-                ){
-                    continue;
-                }
-
-                maze[r][c] = 2;
-
-                totalPellets++;
-                pelletsLeft++;
+            if(maze[r][c] !== 1){
+                continue;
             }
+
+            if(
+                r === 1 &&
+                c === 1
+            ){
+                continue;
+            }
+
+            if(
+                (r === 9 && c === 9) ||
+                (r === 9 && c === 10) ||
+                (r === 10 && c === 9) ||
+                (r === 10 && c === 10)
+            ){
+                continue;
+            }
+
+            if(
+                r === ROWS - 2 &&
+                c === COLS - 2
+            ){
+                continue;
+            }
+
+            maze[r][c] = 2;
+
+            totalPellets++;
+            pelletsLeft++;
         }
     }
 
     maze[1][1] = 1;
+
+    ghostStarts = [
+        {r:9,c:9},
+        {r:9,c:10},
+        {r:10,c:9}
+    ];
 
     maze[9][9] = 1;
     maze[9][10] = 1;
     maze[10][9] = 1;
     maze[10][10] = 1;
 
-    maze[ROWS-2][COLS-2] = 1;
+    maze[ROWS - 2][COLS - 2] = 1;
 
     generateWeaknessPoints();
 
@@ -881,7 +961,10 @@
 
     cherry = null;
 
-    cherryTimer = randomCherryTime();
+    cherryTimer =
+        randomCherryTime();
+
+    scaredTimer = 0;
 
     updateHUD();
 }
@@ -907,106 +990,133 @@
                 }
             }
 
-            function updatePlayer(dt){
-                moveTimers.player += dt;
+           function updatePlayer(dt){
+    moveTimers.player += dt;
 
-                const speed = 0.115;
+    const stepTime =
+        currentDifficulty.playerStep * 1000;
 
-                const stepTime = speed*1000;
+    if(moveTimers.player < stepTime)
+        return;
 
-                if(moveTimers.player < stepTime)
-                    return;
+    moveTimers.player = 0;
 
-                moveTimers.player = 0;
+    tryPlayerDirection();
 
-                tryPlayerDirection();
+    player.prevR = player.r;
+    player.prevC = player.c;
 
-                const nc = player.c + player.dir.x;
+    const nc =
+        player.c + player.dir.x;
 
-                const nr = player.r + player.dir.y;
+    const nr =
+        player.r + player.dir.y;
 
-                if(canMove(nr,nc)){
+    if(canMove(nr,nc)){
+        player.r = nr;
+        player.c = nc;
+    }
+}
 
-                    player.r = nr;
-                    player.c = nc;
-                }
-            }
+        function collectCurrentCell(){
+    const r = player.r;
+    const c = player.c;
 
-            function collectCurrentCell(){
-                const r = player.r;
+    if(maze[r][c] === 2){
+        maze[r][c] = 1;
 
-                const c = player.c;
+        pelletsLeft--;
 
-                if(maze[r][c]===2){
-                    maze[r][c] = 1;
+        score += 10;
 
-                    pelletsLeft--;
+        collectSound();
+    }
 
-                    score += 10;
+    if(isWeaknessPoint(r,c)){
+        consumeWeaknessPoint(r,c);
+    }
 
-                    collectSound();
-                }
+    updateHUD();
 
-                if(isWeaknessPoint(r,c)){
-                    consumeWeaknessPoint(r,c);
-                }
-
-                updateHUD();
-
-                if(
-                    pelletsLeft <= 0 && weaknessPoints.length<=0
-                ){
-                    nextLevel();
-                }
-            }
-
+    if(
+        pelletsLeft <= 0 &&
+        weaknessPoints.length <= 0
+    ){
+        nextLevel();
+    }
+}
             function chooseGhostDirection(g){
 
-                const options = [
-                    {x:1,y:0},
-                    {x:-1,y:0},
-                    {x:0,y:1},
-                    {x:0,y:-1}
-                ];
+    const options = [
+        {x:1,y:0},
+        {x:-1,y:0},
+        {x:0,y:1},
+        {x:0,y:-1}
+    ];
 
-                const valid = options.filter(d=>{
+    const valid = options.filter(d=>{
+        const nr = g.r + d.y;
+        const nc = g.c + d.x;
 
-                    const nr = g.r+d.y;
+        return canMove(nr,nc);
+    });
 
-                    const nc = g.c+d.x;
+    if(!valid.length){
+        return;
+    }
 
-                    return canMove(nr,nc);
-                });
+    let filtered = valid.filter(d=>{
+        return !(
+            d.x === -g.dir.x &&
+            d.y === -g.dir.y
+        );
+    });
 
-                if(!valid.length)
-                    return;
+    if(!filtered.length){
+        filtered = valid;
+    }
 
+    filtered.sort((a,b)=>{
 
-                valid.sort((a,b)=>{
-                    const da = distance({
-                        r:g.r+a.y,
-                        c:g.c+a.x
-                    },
-                player
-            );
-
-            const db = distance({
-                r:g.r+b.y,
-                c:g.c+b.x
+        const da = distance(
+            {
+                r:g.r + a.y,
+                c:g.c + a.x
             },
-        player
-    );
+            player
+        );
 
-    return g.scared ? db-da : da-db;
-                });
+        const db = distance(
+            {
+                r:g.r + b.y,
+                c:g.c + b.x
+            },
+            player
+        );
 
+        return g.scared
+            ? db - da
+            : da - db;
+    });
 
-                if(Math.random() < currentDifficulty.loopChance){
-                    g.dir = valid[Math.floor(Math.random()*valid.length)];
-                }else{
-                    g.dir = valid[0];
-                }
-            }
+    if(
+        Math.random() <
+        currentDifficulty.loopChance
+    ){
+
+        g.dir =
+            filtered[
+                Math.floor(
+                    Math.random() *
+                    filtered.length
+                )
+            ];
+
+    }else{
+
+        g.dir = filtered[0];
+    }
+}
 
             function updateGhost(g,index,dt){
     const now = performance.now();
@@ -1088,29 +1198,45 @@
     }
 }
 
-            function handleGhostCollision(g){
-                if(g.dead)
-                    return;
+function handleGhostCollision(g){
+    if(g.dead){
+        return;
+    }
 
-                if(g.r===player.r && g.c===player.c){
-                    if(g.scared){
-                        g.dead = true;
+    const sameCell =
+        g.r === player.r &&
+        g.c === player.c;
 
-                        g.scared = false;
+    const swapped =
+        g.r === player.prevR &&
+        g.c === player.prevC &&
+        g.prevR === player.r &&
+        g.prevC === player.c;
 
-                        g.scaredUntil = 0;
+    if(!sameCell && !swapped){
+        return;
+    }
 
-                        score += 250;
+    if(g.scared){
+        g.dead = true;
 
-                        eatGhostSound();
+        g.scared = false;
 
-                        updateHUD();
-                    }else{
-                        playerHit();
-                    }
-                }
-            }
+        g.scaredUntil = 0;
 
+        g.moveTimer = 0;
+
+        score += 250;
+
+        eatGhostSound();
+
+        updateHUD();
+
+        return;
+    }
+
+    playerHit();
+}
             function playerHit(){
 
                 if(!running || gameOver)
