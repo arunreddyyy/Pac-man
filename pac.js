@@ -367,6 +367,7 @@
 
 
     function applyTheme(key){
+        if(!THEMES[key]) return;
 
         themeKey = key;
         
@@ -653,13 +654,14 @@
                 scaredUntil:0,
 
                 dead:false,
+                
+                moveTimer:0,
 
                 speed: (base[Math.min(i,base.length-1)] || 0.20) * scale,
 
                 name:names[i]
             }));
 
-            moveTimersGhosts  =Array(count).fill(0);
         }
 
 
@@ -680,6 +682,109 @@
 
             return Math.hypot(a.r-b.r,a.c-b.c);
         }
+
+        function firstStepToward(fromR,fromC,toR,toC){
+    if(
+        fromR === toR &&
+        fromC === toC
+    ){
+        return null;
+    }
+
+    const key =
+        (r,c) => r * COLS + c;
+
+    const visited =
+        Array.from(
+            {length:ROWS},
+            () => Array(COLS).fill(false)
+        );
+
+    const cameFrom = new Map();
+
+    const queue = [
+        [fromR,fromC]
+    ];
+
+    let head = 0;
+
+    visited[fromR][fromC] = true;
+
+    while(head < queue.length){
+        const [r,c] = queue[head++];
+
+        if(
+            r === toR &&
+            c === toC
+        ){
+            break;
+        }
+
+        const steps = [
+            [r-1,c],
+            [r+1,c],
+            [r,c-1],
+            [r,c+1]
+        ];
+
+        for(const [nr,nc] of steps){
+            if(
+                nr < 0 ||
+                nc < 0 ||
+                nr >= ROWS ||
+                nc >= COLS
+            ){
+                continue;
+            }
+
+            if(
+                visited[nr][nc] ||
+                isWall(nr,nc)
+            ){
+                continue;
+            }
+
+            visited[nr][nc] = true;
+
+            cameFrom.set(
+                key(nr,nc),
+                key(r,c)
+            );
+
+            queue.push([
+                nr,nc
+            ]);
+        }
+    }
+
+    const start =
+        key(fromR,fromC);
+
+    let cursor =
+        key(toR,toC);
+
+    if(!visited[toR]?.[toC]){
+        return null;
+    }
+
+    while(
+        cameFrom.get(cursor) !== start
+    ){
+        const parent =
+            cameFrom.get(cursor);
+
+        if(parent === undefined){
+            return null;
+        }
+
+        cursor = parent;
+    }
+
+    return {
+        r:Math.floor(cursor / COLS),
+        c:cursor % COLS
+    };
+}
 
         function updateHUD(){
             if(scoreE1)
@@ -904,41 +1009,84 @@
             }
 
             function updateGhost(g,index,dt){
+    const now = performance.now();
 
-                if(g.scared && performance.now() >= g.scaredUntil){
-                    g.scared = false;
-                    g.scaredUntil = 0;
-                }
+    if(g.scared && now >= g.scaredUntil){
+        g.scared = false;
+        g.scaredUntil = 0;
+    }
 
-                if(g.dead){
+    g.prevR = g.r;
+    g.prevC = g.c;
 
-                    if(g.r===g.homeR && g.c===g.homeC){
-                        g.dead = false;
-                        g.scared = false;
-                        g.scaredUntil = 0;
-                    }
-                }
+    if(g.dead){
 
-                moveTimersGhosts[index] += dt;
+        g.moveTimer += dt;
 
-                const stepTime = g.speed*1000;
-                if(moveTimersGhosts[index] < stepTime){
-                    return;
-                }
+        const returnTime =
+            g.speed * 1000 * 0.5;
 
-                moveTimersGhosts[index] = 0;
+        if(g.moveTimer < returnTime){
+            return;
+        }
 
-                chooseGhostDirection(g);
+        g.moveTimer = 0;
 
-                const nr = g.r+g.dir.y;
+        if(
+            g.r === g.homeR &&
+            g.c === g.homeC
+        ){
+            g.dead = false;
+            g.scared = false;
+            g.scaredUntil = 0;
+            return;
+        }
 
-                const nc = g.c+g.dir.x;
+        const step =
+            firstStepToward(
+                g.r,
+                g.c,
+                g.homeR,
+                g.homeC
+            );
 
-                if(canMove(nr,nc)){
-                    g.r = nr;
-                    g.c = nc;
-                }
-            }
+        if(step){
+            g.dir = {
+                x:step.c - g.c,
+                y:step.r - g.r
+            };
+
+            g.r = step.r;
+            g.c = step.c;
+        }
+
+        return;
+    }
+
+    g.moveTimer += dt;
+
+    const stepTime =
+        g.speed * 1000;
+
+    if(g.moveTimer < stepTime){
+        return;
+    }
+
+    g.moveTimer = 0;
+
+    chooseGhostDirection(g);
+
+    const nr =
+        g.r + g.dir.y;
+
+    const nc =
+        g.c + g.dir.x;
+
+    if(canMove(nr,nc)){
+        g.r = nr;
+        g.c = nc;
+    }
+}
 
             function handleGhostCollision(g){
                 if(g.dead)
