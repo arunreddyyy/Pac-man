@@ -365,6 +365,10 @@
 
     const caughtVideo = document.getElementById("caughtVideo");
 
+    const gameOverVideo = document.getElementById("gameOverVideo");
+
+    const jumpscareFallback = document.getElementById("jumpscareFallback");
+
 
     function applyTheme(key){
         if(!THEMES[key]) return;
@@ -666,50 +670,76 @@ function consumeWeaknessPoint(r,c){
 
     return true;
 }
-        function resetGhosts(){
+   function resetGhosts(){
 
-            const s = ghostStarts;
+    const s = ghostStarts;
+    const base = currentDifficulty.ghostSpeeds;
 
-            const base = currentDifficulty.ghostSpeeds;
+    const scale =
+        Math.max(
+            0.72,
+            1 - (level - 1) * 0.045
+        );
 
-            const scale = Math.max(0.72,1-(level-1)*0.045);
+    const count =
+        Math.min(
+            4,
+            Math.max(
+                3,
+                level >= 3 ? 4 : 3
+            )
+        );
 
-            const count = Math.min(4,Math.max(3,level>=3 ? 4 : 3));
+    const names = [
+        "stalker",
+        "crawler",
+        "wraith",
+        "reaper"
+    ];
 
-            const names = [
-                "stalker",
-                "crawler",
-                "wraith",
-                "reaper"
-            ];
+    ghosts = Array.from(
+        {length:count},
+        (_,i)=>({
 
-            ghosts = Array.from({length:count},(_,i)=>({
+            r:s[i % s.length].r,
+            c:s[i % s.length].c,
 
-                r:s[i%3].r,
-                c:s[i%3].c,
+            homeR:s[i % s.length].r,
+            homeC:s[i % s.length].c,
 
-                homeR:s[i%3].r,
-                homeC:s[i%3].c,
+            color:
+                currentTheme.ghosts[
+                    i % currentTheme.ghosts.length
+                ],
 
+            dir:
+                i % 2
+                    ? {x:-1,y:0}
+                    : {x:1,y:0},
 
-                color: currentTheme.ghosts[i%currentTheme.ghosts.length],
+            scared:false,
+            scaredUntil:0,
+            dead:false,
 
-                dir: i%2 ? {x:-1,y:0} : {x:1,y:0},
+            speed:
+                (
+                    base[
+                        Math.min(
+                            i,
+                            base.length - 1
+                        )
+                    ] || 0.20
+                ) * scale,
 
-                scared:false,
+            moveTimer:0,
 
-                scaredUntil:0,
+            name:names[i]
+        })
+    );
 
-                dead:false,
-                
-                moveTimer:0,
-
-                speed: (base[Math.min(i,base.length-1)] || 0.20) * scale,
-
-                name:names[i]
-            }));
-
-        }
+    moveTimersGhosts =
+        Array(count).fill(0);
+}
 
 
 
@@ -1273,57 +1303,58 @@ function handleGhostCollision(g){
 
                 resetGhosts();
 
-                running = false;
-
-                setTimeout (()=>{
-                    if(!gameOver){
-                        
-                        running = true;
-
-                        lastTime = performance.now();
-                    }
-                },900);
-            }
+           triggerJumpscare("caught");
 
 
 
-            function nextLevel(){
+          function nextLevel(){
 
-                if(gameOver)
-                    return;
+    running = false;
 
-                running = false;
+    level++;
 
-                level++;
+    levelEl.textContent = level;
 
-                levelSound();
+    levelBanner.classList.add("show");
 
-                if(levelE1)
-                    levelE1.textContent = level;
+    setTimeout(()=>{
+        levelBanner.classList.remove("show");
+    },1400);
 
-                if(levelBanner){
+    applyGeneratedMaze();
 
-                    levelBanner.querySelector("strong")
-                    .textContent = `LEVEL ${level}`;
+    player.r = 1;
+    player.c = 1;
 
-                    levelBanner.classList.remove("show");
+    player.prevR = 1;
+    player.prevC = 1;
 
-                    setTimeout(()=>{
-                        levelBanner.classList.remove("show");
-                    },1400);
-                }
+    player.x = 1;
+    player.y = 1;
 
-                setTimeout(()=>{
-                    applyGeneratedMaze();
+    player.dir = {
+        x:0,
+        y:0
+    };
 
-                    running = true;
+    player.nextDir = {
+        x:0,
+        y:0
+    };
 
-                    lastTime = performance.now();
+    moveTimers.player = 0;
 
+    scaredTimer = 0;
 
-                },1000);
+    updateHUD();
 
-            }
+    setTimeout(()=>{
+        if(!gameOver){
+            running = true;
+            lastTime = performance.now();
+        }
+    },900);
+}
 
           function drawMaze(){
                 if(!maze.length){
@@ -1731,6 +1762,31 @@ function handleGhostCollision(g){
 
         requestAnimationFrame(loop);
       }
+      let videosPrimed = false;
+
+function primeVideos(){
+    if(videosPrimed) return;
+
+    videosPrimed = true;
+
+    [caughtVideo, gameOverVideo].forEach(v=>{
+        if(!v) return;
+
+        v.muted = false;
+        v.volume = 1;
+
+        const p = v.play();
+
+        if(p && p.then){
+            p.then(()=>{
+                v.pause();
+                v.currentTime = 0;
+            }).catch(()=>{
+                // autoplay-with-sound blocked; will fall back to muted playback later
+            });
+        }
+    });
+}
 
       function startGame(){
 
@@ -1740,23 +1796,6 @@ function handleGhostCollision(g){
             actx.resume();
         }
 
-        if(caughtVideo){
-
-            caughtVideo.muted = false;
-            caughtVideo.volume = 1;
-
-            caughtVideo.load();
-
-            const prime = caughtVideo.play();
-
-            if(prime && prime.then){
-                prime.then(()=>{
-
-                    caughtVideo.pause();
-
-                    caughtVideo.currentTime = 0;
-                }).catch(()=>{});
-            }
         }
 
         score = 0;
@@ -1794,7 +1833,6 @@ function handleGhostCollision(g){
 
         pauseBtn.style.display = "none";
 
-        msgOverlay.style.display = "flex";
 
         msgTitle.textContent = "THE HOLLOW HAS YOU....";
 
@@ -1811,89 +1849,184 @@ function handleGhostCollision(g){
 
         startBtn.textContent = "Lets do it Again";
 
-        scareSound();
+        triggerJumpscare("gameover")
       }
 
-      function triggerJumpscare(){
+      let jumpscareActive = false;
 
-        running = false;
+function showFallback(text){
+    if(jumpscare) jumpscare.classList.add("novideo");
 
-        if(!jumpscare)
-            return;
+    if(jumpscareFallback){
+        jumpscareFallback.textContent = text;
+    }
+}
 
-        jumpscare.classList.add("show");
+function playJumpscareVideo(video,fallbackMs,fallbackText){
 
-        if(!caughtVideo)
-            return;
+    let settled = false;
 
-        try{
-            caughtVideo.pause();
+    const finish = ()=>{
+        if(settled) return;
 
-            caughtVideo.currentTime = 0;
+        settled = true;
 
-            caughtVideo.muted = false;
+        finishJumpscare();
+    };
 
-            caughtVideo.volume = 1;
+    if(!video){
+        showFallback(fallbackText);
 
-            caughtVideo.onended = finishJumpscare;
+        setTimeout(
+            finish,
+            Math.min(fallbackMs,1800)
+        );
 
-            const promise = caughtVideo.play();
+        return;
+    }
 
-            if(promise && promise.catch){
-                promise.catch(()=>{
-                    caughtVideo.load();
+    video.onerror = ()=>{
+        showFallback(fallbackText);
 
-                    const retry = caughtVideo.play();
+        setTimeout(
+            finish,
+            1800
+        );
+    };
 
-                    if(retry && retry.catch){
-                        retry.catch(()=>{
-                            setTimeout(finishJumpscare,2500);
+    try{
 
-                        });
-                    }
-                });
-            }
-        
-            setTimeout(finishJumpscare,12000);
-        
-        }catch(e){
-            finishJumpscare();
+        video.pause();
+
+        video.currentTime = 0;
+
+        video.muted = false;
+
+        video.volume = 1;
+
+        video.onended = finish;
+
+        const p = video.play();
+
+        if(p && p.catch){
+
+            p.catch(()=>{
+
+                video.muted = true;
+
+                const retry = video.play();
+
+                if(retry && retry.catch){
+
+                    retry.catch(()=>{
+
+                        showFallback(fallbackText);
+
+                        setTimeout(
+                            finish,
+                            1800
+                        );
+
+                    });
+                }
+            });
         }
-      }
 
-      let jumpFinished = false;
+        setTimeout(
+            finish,
+            fallbackMs
+        );
 
-      function finishJumpscare(){
+    }catch(e){
 
-        if(jumpFinished) 
-            return;
+        showFallback(fallbackText);
 
-        jumpFinished = true;
+        setTimeout(
+            finish,
+            1800
+        );
+    }
+}
 
-        setTimeout(()=>{
-            
-            jumpFinished = false;
+function triggerJumpscare(kind){
 
-            if(caughtVideo){
+    running = false;
 
-                caughtVideo.pause();
+    if(jumpscareActive) return;
 
-                try{
-                    caughtVideo.currentTime = 0;
-                }catch(e){}
+    jumpscareActive = true;
 
-            }
+    scareSound();
 
-            jumpscare.classList.remove("show");
+    if(!jumpscare){
+        finishJumpscare();
+        return;
+    }
 
-            if(gameOver){
-                msgOverlay.style.display = "flex";
-            }
+    jumpscare.classList.remove("novideo");
 
+    jumpscare.classList.add("show");
 
-        },100);
-      }
+    if(kind === "gameover"){
 
+        jumpscare.classList.add("gameover");
+
+        jumpscare.classList.remove("caught");
+
+        playJumpscareVideo(
+            gameOverVideo,
+            7000,
+            "THE HOLLOW HAS YOU"
+        );
+
+    }else{
+
+        jumpscare.classList.add("caught");
+
+        jumpscare.classList.remove("gameover");
+
+        playJumpscareVideo(
+            caughtVideo,
+            9000,
+            "IT FOUND YOU"
+        );
+    }
+}
+
+function finishJumpscare(){
+
+    jumpscareActive = false;
+
+    if(jumpscare){
+
+        jumpscare.classList.remove("show");
+
+        jumpscare.classList.remove("caught");
+
+        jumpscare.classList.remove("gameover");
+
+        jumpscare.classList.remove("novideo");
+    }
+
+    if(caughtVideo){
+        caughtVideo.pause();
+    }
+
+    if(gameOverVideo){
+        gameOverVideo.pause();
+    }
+
+    if(gameOver){
+
+        msgOverlay.style.display = "flex";
+
+    }else if(!gameOver && running === false){
+
+        running = true;
+
+        lastTime = performance.now();
+    }
+}
 
       function togglePause(){
 

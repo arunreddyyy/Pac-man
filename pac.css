@@ -63,6 +63,7 @@ body{
     z-index:49;
     background:#000;
     opacity:0;
+    transition:opacity .05s linear;
 }
 
 h1{
@@ -234,6 +235,8 @@ canvas{
     padding:20px;
 
     backdrop-filter:blur(3px);
+
+    overflow-y:auto;
 }
 
 #msgOverlay h2{
