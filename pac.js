@@ -210,6 +210,7 @@
 
         easy:{
             label:"Easy",
+            playerStep:[0.1],
             ghostSpeeds:[0.42,0.45,0.44],
             weaknessPoints:8,
             scaredTime:11000,
@@ -222,6 +223,7 @@
 
         medium:{
             label:"Medium",
+            playerstep:[0.1],
             ghostSpeeds:[0.31,0.33,0.32],
             weaknessPoints:5,
             scaredTime:8000,
@@ -234,6 +236,7 @@
 
         hard:{
             label:"Hard",
+            playerstep:[0.1],
             ghostSpeeds:[0.23,0.245,0.22,0.235],
             weaknessPoints:4,
             scaredTime:6000,
@@ -246,6 +249,7 @@
 
         extreme:{
             label:"Extreme",
+            playerstep:[0.1],
             ghostSpeeds:[0.16,0.17,0.15,0.165],
             weaknessPoints:3,
             scaredTime:4000,
@@ -1307,7 +1311,7 @@ function handleGhostCollision(g){
 
 
 
-          function nextLevel(){
+  function nextLevel(){
 
     running = false;
 
@@ -1315,11 +1319,13 @@ function handleGhostCollision(g){
 
     levelEl.textContent = level;
 
-    levelBanner.classList.add("show");
+    if(levelBanner){
+        levelBanner.classList.add("show");
 
-    setTimeout(()=>{
-        levelBanner.classList.remove("show");
-    },1400);
+        setTimeout(()=>{
+            levelBanner.classList.remove("show");
+        },1400);
+    }
 
     applyGeneratedMaze();
 
@@ -2165,6 +2171,21 @@ startBtn.addEventListener("click",startGame);
 pauseBtn.addEventListener("click",togglePause);
 
 resumeBtn.addEventListener("click",togglePause);
+
+const flickerEl = document.getElementById("flicker");
+
+if(flickerEl){
+    setInterval(()=>{
+        if(Math.random() < 0.07){
+            flickerEl.style.opacity =
+                (0.08 + Math.random()*0.18).toFixed(2);
+
+            setTimeout(()=>{
+                flickerEl.style.opacity = 0;
+            },60 + Math.random()*90);
+        }
+    },900);
+}
 
 
 buildThemeButtons();
