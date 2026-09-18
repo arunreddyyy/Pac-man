@@ -290,15 +290,14 @@
         nextDir:{x:0,y:0}
     };
  
-    let ghosts = [];
- 
+       let ghosts = [];
+
     let ghostStarts = [
         {r:9,c:9},
         {r:9,c:10},
         {r:10,c:9},
         {r:10,c:10}
     ];
- 
     let moveTimers = {
         player: 0
     };
@@ -580,19 +579,17 @@
     }
     return grid;
     }
- 
-
   function isWeaknessPoint(r,c){
     return weaknessPoints.some(
         p => p.r === r && p.c === c
     );
 }
-
+ 
 function generateWeaknessPoints(){
     weaknessPoints = [];
-
+ 
     const candidates = [];
-
+ 
     for(
         let r = 1;
         r < ROWS - 1;
@@ -606,28 +603,28 @@ function generateWeaknessPoints(){
             if(maze[r][c] !== 1){
                 continue;
             }
-
+ 
             if(
                 Math.abs(r - 1) +
                 Math.abs(c - 1) < 5
             ){
                 continue;
             }
-
+ 
             if(
                 Math.abs(r - 9) +
                 Math.abs(c - 9) < 3
             ){
                 continue;
             }
-
+ 
             candidates.push({
                 r:r,
                 c:c
             });
         }
     }
-
+ 
     for(
         let i = candidates.length - 1;
         i > 0;
@@ -637,7 +634,7 @@ function generateWeaknessPoints(){
             Math.floor(
                 Math.random() * (i + 1)
             );
-
+ 
         [
             candidates[i],
             candidates[j]
@@ -646,7 +643,7 @@ function generateWeaknessPoints(){
             candidates[i]
         ];
     }
-
+ 
     weaknessPoints =
         candidates.slice(
             0,
@@ -655,10 +652,10 @@ function generateWeaknessPoints(){
                 candidates.length
             )
         );
-
+ 
     updateHUD();
 }
-
+ 
 function consumeWeaknessPoint(r,c){
     const index =
         weaknessPoints.findIndex(
@@ -666,49 +663,49 @@ function consumeWeaknessPoint(r,c){
                 p.r === r &&
                 p.c === c
         );
-
+ 
     if(index === -1){
         return false;
     }
-
+ 
     weaknessPoints.splice(
         index,
         1
     );
-
+ 
     score += 75;
-
+ 
     const until =
         performance.now() +
         currentDifficulty.scaredTime;
-
+ 
     scaredTimer =
         currentDifficulty.scaredTime;
-
+ 
     ghosts.forEach(g=>{
         if(!g.dead){
             g.scared = true;
             g.scaredUntil = until;
         }
     });
-
+ 
     collectSound();
-
+ 
     updateHUD();
-
+ 
     return true;
 }
    function resetGhosts(){
-
+ 
     const s = ghostStarts;
     const base = currentDifficulty.ghostSpeeds;
-
+ 
     const scale =
         Math.max(
             0.72,
             1 - (level - 1) * 0.045
         );
-
+ 
     const count =
         Math.min(
             4,
@@ -717,38 +714,38 @@ function consumeWeaknessPoint(r,c){
                 level >= 3 ? 4 : 3
             )
         );
-
+ 
     const names = [
         "stalker",
         "crawler",
         "wraith",
         "reaper"
     ];
-
+ 
     ghosts = Array.from(
         {length:count},
         (_,i)=>({
-
+ 
             r:s[i % s.length].r,
             c:s[i % s.length].c,
-
+ 
             homeR:s[i % s.length].r,
             homeC:s[i % s.length].c,
-
+ 
             color:
                 currentTheme.ghosts[
                     i % currentTheme.ghosts.length
                 ],
-
+ 
             dir:
                 i % 2
                     ? {x:-1,y:0}
                     : {x:1,y:0},
-
+ 
             scared:false,
             scaredUntil:0,
             dead:false,
-
+ 
             speed:
                 (
                     base[
@@ -758,36 +755,36 @@ function consumeWeaknessPoint(r,c){
                         )
                     ] || 0.20
                 ) * scale,
-
+ 
             moveTimer:0,
-
+ 
             name:names[i]
         })
     );
-
+ 
     moveTimersGhosts =
         Array(count).fill(0);
 }
-
-
-
+ 
+ 
+ 
         function isWall(r,c){
-
+ 
             if(r<0 || c<0 || r>= ROWS || c>= COLS){
                 return true;
             }
             return maze[r][c]===0;
         }
-
+ 
         function canMove(r,c){
-
+ 
             return !isWall(r,c);
         }
         function distance(a,b){
-
+ 
             return Math.hypot(a.r-b.r,a.c-b.c);
         }
-
+ 
         function firstStepToward(fromR,fromC,toR,toC){
     if(
         fromR === toR &&
@@ -795,43 +792,43 @@ function consumeWeaknessPoint(r,c){
     ){
         return null;
     }
-
+ 
     const key =
         (r,c) => r * COLS + c;
-
+ 
     const visited =
         Array.from(
             {length:ROWS},
             () => Array(COLS).fill(false)
         );
-
+ 
     const cameFrom = new Map();
-
+ 
     const queue = [
         [fromR,fromC]
     ];
-
+ 
     let head = 0;
-
+ 
     visited[fromR][fromC] = true;
-
+ 
     while(head < queue.length){
         const [r,c] = queue[head++];
-
+ 
         if(
             r === toR &&
             c === toC
         ){
             break;
         }
-
+ 
         const steps = [
             [r-1,c],
             [r+1,c],
             [r,c-1],
             [r,c+1]
         ];
-
+ 
         for(const [nr,nc] of steps){
             if(
                 nr < 0 ||
@@ -841,27 +838,26 @@ function consumeWeaknessPoint(r,c){
             ){
                 continue;
             }
-
+ 
             if(
                 visited[nr][nc] ||
                 isWall(nr,nc)
             ){
                 continue;
             }
-
+ 
             visited[nr][nc] = true;
-
+ 
             cameFrom.set(
                 key(nr,nc),
                 key(r,c)
             );
-
+ 
             queue.push([
                 nr,nc
             ]);
         }
-    }
-
+    }   
     const start =
         key(fromR,fromC);
 
@@ -1295,7 +1291,7 @@ function handleGhostCollision(g){
 
     playerHit();
 }
-            function playerHit(){
+                        function playerHit(){
 
                 if(!running || gameOver)
                     return;
@@ -1303,8 +1299,6 @@ function handleGhostCollision(g){
                 lives--;
 
                 hurtSound();
-
-                scareSound();
 
                 updateHUD();
 
@@ -1331,17 +1325,20 @@ function handleGhostCollision(g){
 
                 resetGhosts();
 
-           triggerJumpscare("caught");
+                triggerJumpscare("caught");
+            }
 
-
-
-  function nextLevel(){
+            function nextLevel(){
 
     running = false;
 
     level++;
 
-    levelEl.textContent = level;
+    if(levelBannerStrong){
+        levelBannerStrong.textContent = "LEVEL " + level;
+    }
+
+    levelSound();
 
     if(levelBanner){
         levelBanner.classList.add("show");
@@ -1352,7 +1349,6 @@ function handleGhostCollision(g){
     }
 
     applyGeneratedMaze();
-
     player.r = 1;
     player.c = 1;
 
@@ -1402,46 +1398,46 @@ function handleGhostCollision(g){
     );
 
     for(let r=0; r<ROWS; r++){
-
+ 
         for(let c=0; c<COLS; c++){
-
+ 
             const cell = maze[r][c];
-
+ 
             const x = c*TILE;
             const y = r*TILE;
-
+ 
             if(cell===0){
-
+ 
                 ctx.fillStyle =
                     currentTheme.wall;
-
+ 
                 ctx.fillRect(
                     x,
                     y,
                     TILE,
                     TILE
                 );
-
+ 
                 ctx.strokeStyle =
                     currentTheme.rot;
-
+ 
                 ctx.lineWidth = 1;
-
+ 
                 ctx.strokeRect(
                     x+.5,
                     y+.5,
                     TILE-1,
                     TILE-1
                 );
-
+ 
             }
             else if(cell===2){
-
+ 
                 ctx.fillStyle =
                     currentTheme.pellet;
-
+ 
                 ctx.beginPath();
-
+ 
                 ctx.arc(
                     x+TILE/2,
                     y+TILE/2,
@@ -1449,248 +1445,285 @@ function handleGhostCollision(g){
                     0,
                     Math.PI*2
                 );
-
+ 
                 ctx.fill();
             }
         }
     }
 }
 
-      function drawWeaknesspoints(){
 
+ function drawWeaknesspoints(){
+ 
         const now = performance.now();
-
+ 
         for(const p of weaknessPoints){
             const x = p.c*TILE+TILE/2;
-
+ 
             const y = p.r*TILE+TILE/2;
-
+ 
             const pulse = 1 + Math.sin(now*.006+p.r+p.c)*.18;
-
+ 
             ctx.save();
-
+ 
             ctx.translate(x,y);
-
+ 
             ctx.rotate(now*.001);
-
+ 
             ctx.scale(pulse,pulse);
-
+ 
             ctx.shadowBlur = 18;
-
+ 
             ctx.shadowColor = currentTheme.weakness;
-
+ 
             ctx.fillStyle = currentTheme.weakness;
-
+ 
             ctx.beginPath();
-
+ 
             ctx.moveTo(0,-9);
-
+ 
             ctx.lineTo(7,0);
-
+ 
             ctx.lineTo(0,9);
-
+ 
             ctx.lineTo(-7,0);
-
+ 
             ctx.closePath();
-
+ 
             ctx.fill();
-
+ 
             ctx.restore();
         }
       }  
 
-      function drawPlayer(){
 
+  function drawPlayer(){
+ 
         const x = player.c*TILE+TILE/2;
-
+ 
         const y = player.r*TILE+TILE/2;
-
+ 
         ctx.save();
-
+ 
         ctx.translate(x,y);
-
+ 
         const radius = TILE*.36;
-
+ 
         ctx.fillStyle = "#ffd83d";
-
+ 
         ctx.shadowBlur = 14;
-
+ 
         ctx.shadowColor = "#ffd83d";
         ctx.beginPath();
-
+ 
         let angle = Math.atan2(player.dir.y,player.dir.x);
-
+ 
         if(player.dir.x===0 && player.dir.y===0){
             angle = 0;
         }
-
+ 
         const mouth = .28 + Math.sin(performance.now()*.012)*.08;
-
+ 
         ctx.moveTo(0,0);
-
+ 
         ctx.arc(0,0,radius,angle+mouth,angle-Math.PI*2-mouth,false);
-
+ 
         ctx.closePath();
-
+ 
         ctx.fill();
         ctx.restore();
       }
-
-
+ 
+ 
       function drawGhost(g){
         const x = g.c*TILE+TILE/2;
-
+ 
         const y = g.r*TILE+TILE/2;
-
+ 
         let color = g.color;
-
-
+ 
+ 
         if(g.scared){
             const scaredColors = {
-
+ 
                 blood:"#ffb6b6",
-
+ 
                 toxic:"#c7ff7a",
-
+ 
                 abyss:"#a9c7ff",
-
+ 
                 frost:"#eaffff"
             };
-
-            color = scaredColors[themeKey] || "#8fb8ff";
+ 
+            const baseScared = scaredColors[themeKey] || "#8fb8ff";
+ 
+            const remaining = g.scaredUntil - performance.now();
+ 
+            if(remaining < 1800 && Math.floor(performance.now()/140)%2===0){
+                color = "#ffffff";
+            }else{
+                color = baseScared;
+            }
         }
-
-        if(g.dead){
-            color = "rgba(255,255,255,.28)";
+ 
+        const isDead = g.dead;
+ 
+        if(isDead){
+            color = "rgba(255,255,255,.16)";
         }
-
+ 
         ctx.save();
-
+ 
         ctx.translate(x,y);
-
-        ctx.fillStyle = color;
-
-        ctx.shadowBlur = g.scared ? 16 : 12;
-
+ 
         const w = TILE*.68;
-
+ 
         const h = TILE*.7;
-
+ 
         ctx.beginPath();
-
+ 
         ctx.arc(
             0,-2,w/2,Math.PI,0
         );
-
+ 
         ctx.lineTo(w/2,h/2);
-
+ 
         const waves = 4;
-
+ 
         for(let i=waves;i>=0;i--){
             const xx = -w/2+i*(w/waves);
-
+ 
             const yy = h/2 + (i%2===0 ? 4:0);
-
+ 
             ctx.lineTo(xx,yy);
         }
-
+ 
         ctx.lineTo(-w/2,-2);
-
+ 
+        ctx.closePath();
+ 
+        ctx.shadowBlur = g.scared ? 16 : (isDead ? 10 : 12);
+ 
+        ctx.shadowColor = isDead ? g.color : color;
+ 
+        ctx.fillStyle = color;
+ 
+        ctx.fill();
+ 
+        if(isDead){
+            // faint body is nearly invisible on its own, so trace it in the
+            // ghost's own hunting color so its identity still reads clearly
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = g.color;
+            ctx.lineWidth = 1.6;
+            ctx.globalAlpha = 0.85;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
+ 
         ctx.shadowBlur = 0;
-
+ 
         ctx.fillStyle = "#fff";
-
+ 
         ctx.beginPath();
-
+ 
         ctx.arc(-5,-5,3.2,0,Math.PI*2);
-
+ 
         ctx.arc(5,-5,3.2,0,Math.PI*2);
-
+ 
         ctx.fill();
-
-        ctx.fillStyle = g.scared ? "#333" : "#111";
-
+ 
+        if(isDead){
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = g.color;
+        }
+ 
+        ctx.fillStyle = g.scared ? "#333" : (isDead ? g.color : "#111");
+ 
         ctx.beginPath();
-
+ 
         ctx.arc(-5,-5,1.5,0,Math.PI*2);
-
+ 
         ctx.arc(5,-5,1.5,0,Math.PI*2);
-
+ 
         ctx.fill();
-
+ 
+        ctx.shadowBlur = 0;
+ 
         ctx.restore();
       }
+ 
 
-      function drawCherry(){
-
+       function drawCherry(){
+ 
         if(!cherry)
             return;
-
+ 
         const x = cherry.c*TILE+TILE/2;
-
+ 
         const y = cherry.r*TILE+TILE/2;
-
+ 
         ctx.save();
-
+ 
         ctx.translate(x,y);
-
+ 
         ctx.shadowBlur = 15;
-
+ 
         ctx.shadowColor = "#ff3040";
-
+ 
         ctx.fillStyle = "#ff3040";
-
+ 
         ctx.beginPath();
-
+ 
         ctx.arc(-5,2,5,0,Math.PI*2);
-
+ 
         ctx.arc(5,2,5,0,Math.PI*2);
-
+ 
         ctx.fill();
-
+ 
         ctx.strokeStyle = "#6aff65";
-
+ 
         ctx.lineWidth = 2;
-
+ 
         ctx.beginPath();
-
+ 
         ctx.moveTo(0,-2);
-
+ 
         ctx.quadraticCurveTo(2,-10,8,-12);
-
+ 
         ctx.stroke();
-
+ 
         ctx.restore();
       }
-
-
+ 
+ 
       function render(){
-
+ 
         drawMaze();
-
+ 
         drawWeaknesspoints();
-
+ 
         drawCherry();
-
+ 
         for(const ghost of ghosts){
             drawGhost(ghost);
-
+ 
         }
         drawPlayer();
       }
-
-
+ 
+ 
       function spawnCherry(){
-
+ 
         const candidates = [];
-
+ 
         for(let r = 1; r < ROWS ; r++){
             for(let c = 1; c < COLS ; c++){
-
+ 
                 if(
                     maze[r][c]===1 && !isWeaknessPoint(r,c) && !(r===player.r&&c===player.c)
                 ){
-
+ 
                         candidates.push({
                             r,c
                         
@@ -1700,161 +1733,133 @@ function handleGhostCollision(g){
         }
         if(!candidates.length)
             return;
-
+ 
         cherry = candidates[Math.floor(Math.random()*candidates.length)];
-
+ 
         cherryTimer = currentDifficulty.cherryLife;
       }
-
+ 
       function updateCherry(dt){
         
         if(cherry){
-
+ 
             cherryTimer -= dt;
-
+ 
             if(cherryTimer <= 0){
                 cherry = null;
-
+ 
                 cherryTimer = randomCherryTime();
             }
             return;
         }
         cherryTimer -= dt;
-
+ 
         if(cherryTimer<=0){
-
+ 
             spawnCherry();
         }
       }
-
-      function collectCherry(){
-
+  function collectCherry(){
+ 
         if(!cherry || player.r!==cherry.r || player.c!==cherry.c){
             return;
                 }
                 score += 500;
-
+ 
                 const until = performance.now()+currentDifficulty.scaredTime;
-
+ 
                 scaredTimer = currentDifficulty.scaredTime;
-
+ 
                 ghosts.forEach(g=>{
-
+ 
                     if(!g.dead){
                         g.scared = true;
-
+ 
                         g.scaredUntil = until;
                     }
                 });
-
+ 
                 cherry = null;
-
+ 
                 cherryTimer = randomCherryTime();
-
+ 
                 collectSound();
-
+ 
                 updateHUD();
       }
-
+ 
       function update(dt){
-
+ 
         if(!running || paused)
             return;
-
+ 
         updatePlayer(dt);
-
+ 
         collectCurrentCell();
-
+ 
         collectCherry();
-
+ 
         updateCherry(dt);
-
+ 
         for(let i=0;i<ghosts.length;i++){
             updateGhost(ghosts[i],i,dt);
-
+ 
             handleGhostCollision(ghosts[i]);
         }
-
+ 
         if(scaredTimer>0){
             scaredTimer = Math.max(0,scaredTimer-dt);
         }
       }
-
+ 
       function loop(now){
-
+ 
         const dt = Math.min(100,now-lastTime);
-
+ 
         lastTime = now;
-
+ 
         update(dt);
-
+ 
         render();
-
+ 
         requestAnimationFrame(loop);
       }
-      let videosPrimed = false;
-
-function primeVideos(){
-    if(videosPrimed) return;
-
-    videosPrimed = true;
-
-    [caughtVideo, gameOverVideo].forEach(v=>{
-        if(!v) return;
-
-        v.muted = false;
-        v.volume = 1;
-
-        const p = v.play();
-
-        if(p && p.then){
-            p.then(()=>{
-                v.pause();
-                v.currentTime = 0;
-            }).catch(()=>{
-                // autoplay-with-sound blocked; will fall back to muted playback later
-            });
-        }
-    });
-}
-
       function startGame(){
 
-        ensureAudio();
+    ensureAudio();
 
-        if(actx && actx.state==="suspended"){
-            actx.resume();
-        }
+    if(actx && actx.state==="suspended"){
+        actx.resume();
+    }
 
-        }
+    primeVideos();
 
-        score = 0;
+    score = 0;
 
-        level = 1;
+    level = 1;
 
-        maxLives = currentDifficulty.lives;
+    maxLives = currentDifficulty.lives;
 
-        lives = maxLives;
+    lives = maxLives;
 
-        gameOver = false;
+    gameOver = false;
 
-        running = true;
+    running = true;
 
-        moveTimers.player = 0;
+    moveTimers.player = 0;
 
-        moveTimersGhosts = [];
+    moveTimersGhosts = [];
 
-        applyGeneratedMaze();
+    applyGeneratedMaze();
 
-        msgOverlay.style.display = "none";
+    msgOverlay.style.display = "none";
 
-        pauseBtn.style.display = "block";
+    pauseBtn.style.display = "block";
 
-        lastTime = performance.now();
+    lastTime = performance.now();
 
-        updateHUD();
-      }
-
+    updateHUD();
+  }
       function endGame(){
 
         running = false;
@@ -1979,111 +1984,86 @@ function playJumpscareVideo(video,fallbackMs,fallbackText){
 }
 
 function triggerJumpscare(kind){
-
-    running = false;
-
-    if(jumpscareActive) return;
-
-    jumpscareActive = true;
-
-    scareSound();
-
-    if(!jumpscare){
-        finishJumpscare();
-        return;
-    }
-
-    jumpscare.classList.remove("novideo");
-
-    jumpscare.classList.add("show");
-
-    if(kind === "gameover"){
-
-        jumpscare.classList.add("gameover");
-
-        jumpscare.classList.remove("caught");
-
-        playJumpscareVideo(
-            gameOverVideo,
-            7000,
-            "THE HOLLOW HAS YOU"
-        );
-
-    }else{
-
-        jumpscare.classList.add("caught");
-
-        jumpscare.classList.remove("gameover");
-
-        playJumpscareVideo(
-            caughtVideo,
-            9000,
-            "IT FOUND YOU"
-        );
-    }
-}
-
-function finishJumpscare(){
-
-    jumpscareActive = false;
-
-    if(jumpscare){
-
-        jumpscare.classList.remove("show");
-
-        jumpscare.classList.remove("caught");
-
-        jumpscare.classList.remove("gameover");
-
-        jumpscare.classList.remove("novideo");
-    }
-
-    if(caughtVideo){
-        caughtVideo.pause();
-    }
-
-    if(gameOverVideo){
-        gameOverVideo.pause();
-    }
-
-    if(gameOver){
-
-        msgOverlay.style.display = "flex";
-
-    }else if(!gameOver && running === false){
-
-        running = true;
-
-        lastTime = performance.now();
-    }
-}
-
-      function togglePause(){
-
-        if(!running || gameOver)
+ 
+        running = false;
+ 
+        if(jumpscareActive) return;
+        jumpscareActive = true;
+ 
+        scareSound();
+ 
+        if(!jumpscare){
+            finishJumpscare();
             return;
-
-        paused = !paused;
-
-        if(paused){
-
-            pauseOverlay.classList.add("show");
-
-            pauseBtn.textContent = "Resume [P]";
+        }
+ 
+        jumpscare.classList.remove("novideo");
+        jumpscare.classList.add("show");
+ 
+        if(kind === "gameover"){
+            jumpscare.classList.add("gameover");
+            jumpscare.classList.remove("caught");
+            playJumpscareVideo(gameOverVideo,7000,"THE HOLLOW HAS YOU");
         }else{
-
-            pauseOverlay.classList.remove("show");
-
-            pauseBtn.textContent = "pause [P]";
-
+            jumpscare.classList.add("caught");
+            jumpscare.classList.remove("gameover");
+            playJumpscareVideo(caughtVideo,9000,"IT FOUND YOU");
+        }
+      }
+ 
+      function finishJumpscare(){
+ 
+        jumpscareActive = false;
+ 
+        if(jumpscare){
+            jumpscare.classList.remove("show");
+            jumpscare.classList.remove("caught");
+            jumpscare.classList.remove("gameover");
+            jumpscare.classList.remove("novideo");
+        }
+ 
+        if(caughtVideo){
+            caughtVideo.pause();
+        }
+        if(gameOverVideo){
+            gameOverVideo.pause();
+        }
+ 
+        if(gameOver){
+            msgOverlay.style.display = "flex";
+        }else if(!gameOver && running===false){
+            running = true;
             lastTime = performance.now();
         }
       }
-
+ 
+ 
+      function togglePause(){
+ 
+        if(!running || gameOver)
+            return;
+ 
+        paused = !paused;
+ 
+        if(paused){
+ 
+            pauseOverlay.classList.add("show");
+ 
+            pauseBtn.textContent = "Resume [P]";
+        }else{
+ 
+            pauseOverlay.classList.remove("show");
+ 
+            pauseBtn.textContent = "pause [P]";
+ 
+            lastTime = performance.now();
+        }
+      }
+ 
       document.addEventListener("keydown",e=>{
-
+ 
         const key = e.key.toLowerCase();
-
+ 
         if(
             [
                 "arrowup",
@@ -2096,20 +2076,20 @@ function finishJumpscare(){
                 "d",
                 "p"
             ].includes(key)
-
+ 
         ){
-
+ 
             e.preventDefault();
         }
-
+ 
         if(key==="p"){
-
+ 
             togglePause();
-
+ 
             return;
-
+ 
         }
-
+ 
         if(
             key==="arrowup" || key==="w"
         ){
@@ -2117,7 +2097,7 @@ function finishJumpscare(){
                 x:0,y:-1
             };
         }
-
+ 
         if(
             key==="arrowdown" || key==="s"
         ){
@@ -2125,7 +2105,7 @@ function finishJumpscare(){
                 x:0,y:1
             };
         }
-
+ 
         if(
             key==="arrowleft" || key==="a"
         ){
@@ -2133,7 +2113,7 @@ function finishJumpscare(){
                 x:-1,y:0
             };
         }
-
+ 
         if(
             key==="arrowright" || key==="d"
         ){
@@ -2142,89 +2122,85 @@ function finishJumpscare(){
             };
         }
     });
-
+ 
     let touchStartX = 0;
     let touchStartY = 0;
-
+ 
     canvas.addEventListener("touchstart",e=>{
-
+ 
         const t = e.changedTouches[0];
-
+ 
         touchStartX = t.clientX;
-
+ 
         touchStartY = t.clientY;
     },
     {passive:true});
-
+ 
   canvas.addEventListener("touchend",e=>{
-
+ 
     const t = e.changedTouches[0];
-
+ 
     const dx =
         t.clientX-touchStartX;
-
+ 
     const dy =
         t.clientY-touchStartY;
-
+ 
     const ax = Math.abs(dx);
     const ay = Math.abs(dy);
-
+ 
     if(Math.max(ax,ay)<20){
         return;
     }
-
+ 
     if(ax>ay){
-
+ 
         player.nextDir =
             dx>0
             ? {x:1,y:0}
             : {x:-1,y:0};
-
+ 
     }else{
-
+ 
         player.nextDir =
             dy>0
             ? {x:0,y:1}
             : {x:0,y:-1};
     }
-
+ 
 },{passive:true});
-
+ 
 startBtn.addEventListener("click",startGame);
-
+ 
 pauseBtn.addEventListener("click",togglePause);
-
+ 
 resumeBtn.addEventListener("click",togglePause);
-
+ 
+// subtle atmospheric screen flicker
 const flickerEl = document.getElementById("flicker");
-
 if(flickerEl){
     setInterval(()=>{
         if(Math.random() < 0.07){
-            flickerEl.style.opacity =
-                (0.08 + Math.random()*0.18).toFixed(2);
-
-            setTimeout(()=>{
-                flickerEl.style.opacity = 0;
-            },60 + Math.random()*90);
+            flickerEl.style.opacity = (0.08 + Math.random()*0.18).toFixed(2);
+            setTimeout(()=>{ flickerEl.style.opacity = 0; }, 60 + Math.random()*90);
         }
     },900);
 }
-
-
+ 
 buildThemeButtons();
-
+ 
 buildDifficultyButtons();
-
+ 
 applyTheme(themeKey);
-
+ 
 applyDifficulty(difficultyKey);
-
+ 
 updateHUD();
-
+ 
 requestAnimationFrame(t=>{
     lastTime = t;
     loop(t);
 });
-
+ 
         })();
+ 
