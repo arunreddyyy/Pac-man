@@ -214,7 +214,7 @@
             label:"Easy",
             ghostSpeeds:[0.42,0.45,0.44],
             playerStep:0.15,
-            weaknessPoints:8,
+            weaknessPoints:6,
             scaredTime:11000,
             lives:4,
             cherryMin:10000,
@@ -227,7 +227,7 @@
             label:"Medium",
             ghostSpeeds:[0.31,0.33,0.32],
             playerStep:0.14,
-            weaknessPoints:5,
+            weaknessPoints:4,
             scaredTime:8000,
             lives:3,
             cherryMin:14000,
@@ -240,7 +240,7 @@
             label:"Hard",
             ghostSpeeds:[0.23,0.245,0.22,0.235],
             playerStep:0.13,
-            weaknessPoints:4,
+            weaknessPoints:3,
             scaredTime:6000,
             lives:3,
             cherryMin:18000,
@@ -253,7 +253,7 @@
             label:"Extreme",
             ghostSpeeds:[0.16,0.17,0.15,0.165],
             playerStep:0.115,
-            weaknessPoints:3,
+            weaknessPoints:2,
             scaredTime:4000,
             lives:2,
             cherryMin:22000,
@@ -298,6 +298,9 @@
         {r:10,c:9},
         {r:10,c:10}
     ];
+
+    let ghostRealeseTimers = 3500;
+    
     let moveTimers = {
         player: 0
     };
@@ -391,7 +394,7 @@
                     v.pause();
                     v.currentTime = 0;
                 }).catch(()=>{
-                    // autoplay-with-sound blocked; will fall back to muted playback later
+
                 });
             }
         });
@@ -521,65 +524,216 @@
         updateDifficultyButtons();
     }
  
-    function makeMaze(){
- 
-        const grid = Array.from(
-            {length:ROWS},
-            ()=>Array(COLS).fill(0)
-        );
- 
-        function carve(r,c){
- 
-            grid[r][c] = 1;
- 
-            const dirs = [
-                [0,2],
-                [2,0],
-                [0,-2],
-                [-2,0]
-            ];
- 
-            for(let i = dirs.length -1;i>0;i--){
-                const j = Math.floor(Math.random()*(i+1));
-                [dirs[i],dirs[j]] = [dirs[j],dirs[i]];
-            }
- 
-            for(const [dr,dc] of dirs){
-                const nr = r+dr;
-                const nc = c+dc;
- 
-                if(nr>0 && nr< ROWS-1 && nc>0 && nc<COLS-1 && grid[nr][nc]===0){
- 
-                
-                    grid[r+dr/2][c+dc/2] = 1;
- 
-                    carve(nr,nc);
-                }
+ function makeMaze(){
+
+    const grid = Array.from(
+        { length: ROWS },
+        () => Array(COLS).fill(0)
+    );
+
+   
+
+    function carve(r, c){
+
+        grid[r][c] = 1;
+
+        const dirs = [
+            [0, 2],
+            [2, 0],
+            [0, -2],
+            [-2, 0]
+        ];
+
+        
+        for(let i = dirs.length - 1; i > 0; i--){
+            const j = Math.floor(Math.random() * (i + 1));
+
+            [dirs[i], dirs[j]] =
+            [dirs[j], dirs[i]];
+        }
+
+        for(const [dr, dc] of dirs){
+
+            const nr = r + dr;
+            const nc = c + dc;
+
+            if(
+                nr > 0 &&
+                nr < ROWS - 1 &&
+                nc > 0 &&
+                nc < COLS - 1 &&
+                grid[nr][nc] === 0
+            ){
+
+              
+                grid[r + dr / 2][c + dc / 2] = 1;
+
+                carve(nr, nc);
             }
         }
-    
- 
-    carve(1,1);
- 
-    for(let i=0;i<18;i++){
- 
-        const r = 1 + Math.floor(Math.random()*(ROWS-2));
- 
-        const c = 1 + Math.floor(Math.random()*(COLS-2));
- 
-        if(grid[r][c] === 0 && (
-            grid[r-1]?.[c]===1 ||
-            grid[r+1]?.[c]===1 ||
-            grid[r]?.[c-1]===1 ||
-            grid[r]?.[c+1]===1    
-        )
+    }
+
+    carve(1, 1);
+
+
+    const loopCandidates = [];
+
+    for(let r = 1; r < ROWS - 1; r++){
+
+        for(let c = 1; c < COLS - 1; c++){
+
+            
+            if(grid[r][c] !== 0)
+                continue;
+
+            const up =
+                grid[r - 1][c] === 1;
+
+            const down =
+                grid[r + 1][c] === 1;
+
+            const left =
+                grid[r][c - 1] === 1;
+
+            const right =
+                grid[r][c + 1] === 1;
+
+
+          
+
+            if(left && right){
+                loopCandidates.push({
+                    r,
+                    c,
+                    type:"horizontal"
+                });
+            }
+
+
+            if(up && down){
+                loopCandidates.push({
+                    r,
+                    c,
+                    type:"vertical"
+                });
+            }
+        }
+    }
+
+
+    for(let i = loopCandidates.length - 1; i > 0; i--){
+
+        const j =
+            Math.floor(
+                Math.random() * (i + 1)
+            );
+
+        [
+            loopCandidates[i],
+            loopCandidates[j]
+        ] = [
+            loopCandidates[j],
+            loopCandidates[i]
+        ];
+    }
+
+
+   
+    const LOOP_COUNT = 28;
+
+    for(
+        let i = 0;
+        i < Math.min(
+            LOOP_COUNT,
+            loopCandidates.length
+        );
+        i++
     ){
-        grid[r][c] = 1;
-     }
+
+        const p = loopCandidates[i];
+
+        grid[p.r][p.c] = 1;
     }
+
+
+
+    const extraCandidates = [];
+
+    for(let r = 2; r < ROWS - 2; r++){
+
+        for(let c = 2; c < COLS - 2; c++){
+
+            if(grid[r][c] !== 0)
+                continue;
+
+            let neighbours = 0;
+
+            if(grid[r - 1][c] === 1) neighbours++;
+            if(grid[r + 1][c] === 1) neighbours++;
+            if(grid[r][c - 1] === 1) neighbours++;
+            if(grid[r][c + 1] === 1) neighbours++;
+
+          
+
+            if(neighbours >= 3){
+
+                extraCandidates.push({
+                    r,
+                    c
+                });
+            }
+        }
+    }
+
+
+   
+    for(let i = extraCandidates.length - 1; i > 0; i--){
+
+        const j =
+            Math.floor(
+                Math.random() * (i + 1)
+            );
+
+        [
+            extraCandidates[i],
+            extraCandidates[j]
+        ] = [
+            extraCandidates[j],
+            extraCandidates[i]
+        ];
+    }
+
+
+    
+    const JUNCTION_COUNT = 8;
+
+    for(
+        let i = 0;
+        i < Math.min(
+            JUNCTION_COUNT,
+            extraCandidates.length
+        );
+        i++
+    ){
+
+        const p = extraCandidates[i];
+
+        grid[p.r][p.c] = 1;
+    }
+
+
+
+    grid[1][1] = 1;
+
+
+    
+    grid[ROWS - 2][COLS - 2] = 1;
+
+
     return grid;
-    }
-  function isWeaknessPoint(r,c){
+}   
+  
+    function isWeaknessPoint(r,c){
     return weaknessPoints.some(
         p => p.r === r && p.c === c
     );
@@ -600,7 +754,7 @@ function generateWeaknessPoints(){
             c < COLS - 1;
             c++
         ){
-            if(maze[r][c] !== 1){
+            if(maze[r][c] === 0){
                 continue;
             }
  
@@ -1611,8 +1765,7 @@ function handleGhostCollision(g){
         ctx.fill();
  
         if(isDead){
-            // faint body is nearly invisible on its own, so trace it in the
-            // ghost's own hunting color so its identity still reads clearly
+    
             ctx.shadowBlur = 0;
             ctx.strokeStyle = g.color;
             ctx.lineWidth = 1.6;
@@ -2176,7 +2329,6 @@ pauseBtn.addEventListener("click",togglePause);
  
 resumeBtn.addEventListener("click",togglePause);
  
-// subtle atmospheric screen flicker
 const flickerEl = document.getElementById("flicker");
 if(flickerEl){
     setInterval(()=>{
